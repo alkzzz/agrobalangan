@@ -11,6 +11,17 @@ body {
     font-family: 'Poppins', sans-serif;
 }
 
+.highlighted {
+    background-color: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.btn {
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+
 /* Navbar Styles */
 .navbar {
     transition: all 0.3s ease;

@@ -15,7 +15,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('fontawesome/css/regular.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('fontawesome/css/solid.min.css') }}">
 
     <!-- MapLibre CSS -->
     <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
@@ -66,7 +68,7 @@
                 Berkelanjutan di Kabupaten Balangan</p>
             <a href="#peta-interaktif"
                 class="btn btn-success btn-lg animate__animated animate__fadeIn animate__delay-2s">
-                <i class="fas fa-map-marker-alt me-2"></i> Jelajahi Peta
+                <i class="fa-solid fa-location-dot"></i> Jelajahi Peta
             </a>
         </div>
     </section>
@@ -111,22 +113,11 @@
         <div class="container">
             <h2 class="section-title text-center mb-5">Peta Interaktif Agropolitan</h2>
             <div id="map" class="shadow mb-4"></div>
-            <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
-                <button class="btn btn-success" onclick="goToCropArea('corn')">
-                    Area Jagung
-                </button>
-                <button class="btn btn-warning" onclick="goToCropArea('palm')">
-                    Area Kelapa Sawit
-                </button>
-                <button class="btn btn-primary" onclick="goToCropArea('rice')">
-                    Area Padi
-                </button>
-                <button class="btn btn-secondary" onclick="resetZoom()">
-                    <i class="fas fa-redo-alt me-2"></i>Reset
-                </button>
-            </div>
+            <div class="button-container d-flex flex-wrap justify-content-center my-3"></div>
         </div>
+
     </section>
+
 
     <!-- Informasi Umum -->
     <section id="informasi-umum" class="py-5 bg-light">
@@ -203,8 +194,8 @@
     <!-- MapLibre JavaScript -->
     <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 
-    <!-- Map Initialization and Interaction Logic -->
     <script>
+        var agropolitanUrl = "{{ asset('geojson/Agropolitan.json') }}";
         var administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
 
         var map = new maplibregl.Map({
@@ -227,185 +218,161 @@
                 }]
             },
             center: [115.497, -2.308],
-            zoom: 13
+            zoom: 11
         });
 
         map.addControl(new maplibregl.NavigationControl());
 
-        var cropAreas = {
-            'corn': {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                        [
-                            [115.480, -2.320],
-                            [115.485, -2.320],
-                            [115.485, -2.315],
-                            [115.480, -2.315],
-                            [115.480, -2.320]
-                        ]
-                    ]
-                },
-                "properties": {
-                    "name": "Area Jagung"
-                }
-            },
-            'palm': {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                        [
-                            [115.500, -2.310],
-                            [115.505, -2.310],
-                            [115.505, -2.305],
-                            [115.500, -2.305],
-                            [115.500, -2.310]
-                        ]
-                    ]
-                },
-                "properties": {
-                    "name": "Area Kelapa Sawit"
-                }
-            },
-            'rice': {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                        [
-                            [115.490, -2.320],
-                            [115.495, -2.320],
-                            [115.495, -2.315],
-                            [115.490, -2.315],
-                            [115.490, -2.320]
-                        ]
-                    ]
-                },
-                "properties": {
-                    "name": "Area Padi"
-                }
-            }
-        };
+        // Variable to keep track of the currently highlighted button
+        let currentHighlightedButton = null;
 
-        var currentPopup = null;
+        fetch(agropolitanUrl)
+            .then(response => response.json())
+            .then(data => {
+                map.addSource('agropolitan-areas', {
+                    'type': 'geojson',
+                    'data': data
+                });
 
-        map.on('load', function() {
-            map.addSource('crop-areas', {
-                'type': 'geojson',
-                'data': {
-                    "type": "FeatureCollection",
-                    "features": Object.values(cropAreas)
-                }
-            });
+                map.addLayer({
+                    'id': 'agropolitan-areas-layer',
+                    'type': 'fill',
+                    'source': 'agropolitan-areas',
+                    'paint': {
+                        'fill-color': '#88C0D0',
+                        'fill-opacity': 0.5
+                    }
+                });
 
-            map.addLayer({
-                'id': 'crop-areas-layer',
-                'type': 'fill',
-                'source': 'crop-areas',
-                'paint': {
-                    'fill-color': ['match', ['get', 'name'], 'Area Jagung', '#34D399', 'Area Kelapa Sawit',
-                        '#FF8800', 'Area Padi', '#1E90FF', '#CCCCCC'
-                    ],
-                    'fill-opacity': 0.6
-                }
-            });
+                map.addLayer({
+                    'id': 'agropolitan-areas-borders',
+                    'type': 'line',
+                    'source': 'agropolitan-areas',
+                    'paint': {
+                        'line-color': '#0044CC',
+                        'line-width': 2
+                    }
+                });
 
-            map.addLayer({
-                'id': 'crop-areas-borders',
-                'type': 'line',
-                'source': 'crop-areas',
-                'paint': {
-                    'line-color': '#FF0000',
-                    'line-width': 1.5
-                }
-            });
+                var buttonContainer = document.querySelector('.button-container');
 
-            map.addSource('administrasi-desa', {
-                'type': 'geojson',
-                'data': administrasiDesaUrl
-            });
+                // Create buttons and map each button to its corresponding feature
+                data.features.forEach(feature => {
+                    const areaId = feature.id; // Ensure 'id' is unique for each feature
+                    const desaName = feature.properties.Desa;
+                    const coordinates = feature.geometry.coordinates[0][0];
 
-            map.addLayer({
-                'id': 'administrasi-desa-fill',
-                'type': 'fill',
-                'source': 'administrasi-desa',
-                'paint': {
-                    'fill-color': '#FFFFFF',
-                    'fill-opacity': 0.1
-                }
-            });
+                    // Create button with unique ID
+                    var button = document.createElement('button');
+                    button.id = `area-button-${areaId}`;
+                    button.textContent = `${areaId} - ${desaName}`;
+                    button.classList.add('btn', 'btn-outline-success', 'm-2');
 
-            map.addLayer({
-                'id': 'administrasi-desa-borders',
-                'type': 'line',
-                'source': 'administrasi-desa',
-                'paint': {
-                    'line-color': '#000000',
-                    'line-width': 0.5
-                }
-            });
+                    // Store the button element in the feature for easy access
+                    feature.buttonElement = button;
 
-            map.on('click', 'administrasi-desa-fill', function(e) {
-                var properties = e.features[0].properties;
+                    // Fly to area on button click
+                    button.onclick = () => {
+                        map.flyTo({
+                            center: coordinates,
+                            zoom: 14,
+                            speed: 0.5,
+                            curve: 1.5
+                        });
 
-                if (currentPopup) {
-                    currentPopup.remove();
+                        // Highlight the clicked button
+                        highlightButton(button);
+                    };
+
+                    buttonContainer.appendChild(button);
+                });
+
+                // Popup for Agropolitan areas
+                var popup = new maplibregl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                });
+
+                function highlightButton(button) {
+                    if (currentHighlightedButton) {
+                        currentHighlightedButton.classList.remove('highlighted');
+                    }
+
+                    button.classList.add('highlighted');
+                    currentHighlightedButton = button;
                 }
 
-                var popupContent = `
-                    <div style="font-family: Arial, sans-serif;">
-                        <p style="margin: 0; color:green; font-weight:bold">${properties.DESA}</p>
-                    </div>
-                `;
+                // Show popup on left-click and highlight corresponding button
+                map.on('click', 'agropolitan-areas-layer', function(e) {
+                    var properties = e.features[0].properties;
+                    var desaName = properties.Desa;
+                    var areaId = e.features[0].id;
+                    var kecamatan = properties.Kecamatan;
+                    var klsLereng = properties.Kls_lereng;
+                    var irigasi = properties.Irigasi;
 
-                currentPopup = new maplibregl.Popup({
-                        offset: 15,
-                        closeButton: false,
-                        closeOnClick: false
-                    })
-                    .setLngLat(e.lngLat)
-                    .setHTML(popupContent)
-                    .addTo(map);
+                    // Set popup content with additional properties
+                    popup.setLngLat(e.lngLat)
+                        .setHTML(`
+                        <strong>${areaId} - ${desaName}</strong><br>
+                        <strong>Kecamatan:</strong> ${kecamatan}<br>
+                        <strong>Kelas Lereng:</strong> ${klsLereng}<br>
+                        <strong>Irigasi:</strong> ${irigasi}
+                    `)
+                        .addTo(map);
+
+                    // Highlight the corresponding button
+                    var button = document.getElementById(`area-button-${areaId}`);
+                    if (button) {
+                        highlightButton(button);
+                    }
+
+                    // Change cursor to pointer
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Close popup and remove highlight on right-click
+                map.getCanvas().addEventListener('contextmenu', function(e) {
+                    e.preventDefault(); // Prevent the context menu from appearing
+                    popup.remove();
+                    map.getCanvas().style.cursor = '';
+
+                    if (currentHighlightedButton) {
+                        currentHighlightedButton.classList.remove('highlighted');
+                        currentHighlightedButton = null;
+                    }
+                });
             });
 
-            map.getCanvas().addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                if (currentPopup) {
-                    currentPopup.remove();
-                    currentPopup = null;
-                }
-            });
+        // Add the Administrasi Desa layer
+        fetch(administrasiDesaUrl)
+            .then(response => response.json())
+            .then(data => {
+                map.addSource('administrasi-desa', {
+                    'type': 'geojson',
+                    'data': data
+                });
 
-            map.on('mouseenter', 'administrasi-desa-fill', function() {
-                map.getCanvas().style.cursor = 'pointer';
-            });
+                map.addLayer({
+                    'id': 'administrasi-desa-fill',
+                    'type': 'fill',
+                    'source': 'administrasi-desa',
+                    'paint': {
+                        'fill-color': '#FFFFFF',
+                        'fill-opacity': 0.1
+                    }
+                });
 
-            map.on('mouseleave', 'administrasi-desa-fill', function() {
-                map.getCanvas().style.cursor = '';
+                map.addLayer({
+                    'id': 'administrasi-desa-borders',
+                    'type': 'line',
+                    'source': 'administrasi-desa',
+                    'paint': {
+                        'line-color': '#000000',
+                        'line-width': 0.5
+                    }
+                });
             });
-        });
-
-        function goToCropArea(crop) {
-            var cropArea = cropAreas[crop];
-            var coordinates = cropArea.geometry.coordinates[0][0];
-            map.flyTo({
-                center: coordinates,
-                zoom: 15,
-                speed: 0.7,
-                curve: 1.5
-            });
-        }
-
-        function resetZoom() {
-            map.flyTo({
-                center: [115.497, -2.308],
-                zoom: 13,
-                speed: 0.7,
-                curve: 1.5
-            });
-        }
     </script>
 </body>
 
