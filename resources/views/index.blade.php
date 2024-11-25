@@ -9,7 +9,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicons/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicons/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ asset('favicons/site.webmanifest') }}">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,11 +24,10 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/front.css') }}">
 </head>
 
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top border-bottom">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#">
@@ -43,10 +41,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Beranda</a>
+                        <a class="nav-link" href="#hero-section">Beranda</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#peta-interaktif">Peta Interaktif</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#statistik">Statistik</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#informasi-umum">Informasi</a>
@@ -60,7 +61,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section d-flex align-items-center">
+    <section id="hero-section" class="hero-section d-flex align-items-center">
         <div class="container text-center text-white">
             <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeIn">Selamat Datang di Agropolitan Balangan
             </h1>
@@ -73,8 +74,17 @@
         </div>
     </section>
 
+    <!-- Interactive Map Section -->
+    <section id="peta-interaktif" class="py-5 bg-white">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">Peta Interaktif Agropolitan</h2>
+            <div id="map" class="shadow mb-4"></div>
+            <div class="button-container d-flex flex-wrap justify-content-center my-3"></div>
+        </div>
+    </section>
+
     <!-- Featured Stats -->
-    <section class="py-5 bg-light">
+    <section id="statistik" class="py-5 bg-light">
         <div class="container">
             <div class="row g-4 justify-content-center">
                 <div class="col-md-4">
@@ -107,17 +117,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Interactive Map Section -->
-    <section id="peta-interaktif" class="py-5 bg-white">
-        <div class="container">
-            <h2 class="section-title text-center mb-5">Peta Interaktif Agropolitan</h2>
-            <div id="map" class="shadow mb-4"></div>
-            <div class="button-container d-flex flex-wrap justify-content-center my-3"></div>
-        </div>
-
-    </section>
-
 
     <!-- Informasi Umum -->
     <section id="informasi-umum" class="py-5 bg-light">
@@ -191,11 +190,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- MapLibre JavaScript -->
     <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 
     <script>
-        var agropolitanUrl = "{{ asset('geojson/Agropolitan.json') }}";
+        var agropolitanUrl = "{{ asset('geojson/Agropolitan1.json') }}";
         var administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
 
         var map = new maplibregl.Map({
@@ -223,7 +221,6 @@
 
         map.addControl(new maplibregl.NavigationControl());
 
-        // Variable to keep track of the currently highlighted button
         let currentHighlightedButton = null;
 
         fetch(agropolitanUrl)
@@ -239,7 +236,7 @@
                     'type': 'fill',
                     'source': 'agropolitan-areas',
                     'paint': {
-                        'fill-color': '#88C0D0',
+                        'fill-color': '#00FF00',
                         'fill-opacity': 0.5
                     }
                 });
@@ -249,16 +246,15 @@
                     'type': 'line',
                     'source': 'agropolitan-areas',
                     'paint': {
-                        'line-color': '#0044CC',
+                        'line-color': '#008000',
                         'line-width': 2
                     }
                 });
 
                 var buttonContainer = document.querySelector('.button-container');
 
-                // Create buttons and map each button to its corresponding feature
                 data.features.forEach(feature => {
-                    const areaId = feature.id; // Ensure 'id' is unique for each feature
+                    const areaId = feature.id;
                     const desaName = feature.properties.Desa;
                     const coordinates = feature.geometry.coordinates[0][0];
 
@@ -268,10 +264,8 @@
                     button.textContent = `${areaId} - ${desaName}`;
                     button.classList.add('btn', 'btn-outline-success', 'm-2');
 
-                    // Store the button element in the feature for easy access
                     feature.buttonElement = button;
 
-                    // Fly to area on button click
                     button.onclick = () => {
                         map.flyTo({
                             center: coordinates,
@@ -280,7 +274,6 @@
                             curve: 1.5
                         });
 
-                        // Highlight the clicked button
                         highlightButton(button);
                     };
 
@@ -302,7 +295,6 @@
                     currentHighlightedButton = button;
                 }
 
-                // Show popup on left-click and highlight corresponding button
                 map.on('click', 'agropolitan-areas-layer', function(e) {
                     var properties = e.features[0].properties;
                     var desaName = properties.Desa;
@@ -311,7 +303,6 @@
                     var klsLereng = properties.Kls_lereng;
                     var irigasi = properties.Irigasi;
 
-                    // Set popup content with additional properties
                     popup.setLngLat(e.lngLat)
                         .setHTML(`
                         <strong>${areaId} - ${desaName}</strong><br>
@@ -321,17 +312,14 @@
                     `)
                         .addTo(map);
 
-                    // Highlight the corresponding button
                     var button = document.getElementById(`area-button-${areaId}`);
                     if (button) {
                         highlightButton(button);
                     }
 
-                    // Change cursor to pointer
                     map.getCanvas().style.cursor = 'pointer';
                 });
 
-                // Close popup and remove highlight on right-click
                 map.getCanvas().addEventListener('contextmenu', function(e) {
                     e.preventDefault(); // Prevent the context menu from appearing
                     popup.remove();
