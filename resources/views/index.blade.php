@@ -25,6 +25,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/front.css') }}">
+
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+
+        #dropdown-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .list-group-item {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .list-group-item:hover,
+        .list-group-item.active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #reset-button {
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #reset-button:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
@@ -78,10 +112,24 @@
     <section id="peta-interaktif" class="py-5 bg-white">
         <div class="container">
             <h2 class="section-title text-center mb-5">Peta Interaktif Agropolitan</h2>
-            <div id="map" class="shadow mb-4"></div>
-            <div class="button-container d-flex flex-wrap justify-content-center my-3"></div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div id="dropdown-container" class="list-group shadow-sm">
+                        <a href="#" id="reset-button"
+                            class="list-group-item list-group-item-action text-center bg-danger text-white">
+                            Reset Zoom
+                        </a>
+                        <!-- Dynamic Dropdown Items -->
+                    </div>
+                </div>
+                <!-- Map Container -->
+                <div class="col-md-9">
+                    <div id="map" class="shadow"></div>
+                </div>
+            </div>
         </div>
     </section>
+
 
     <!-- Featured Stats -->
     <section id="statistik" class="py-5 bg-light">
@@ -193,7 +241,7 @@
     <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 
     <script>
-        var agropolitanUrl = "{{ asset('geojson/Agropolitan1.json') }}";
+        var agropolitanUrl = "{{ asset('geojson/Agropolitan.json') }}";
         var administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
 
         var map = new maplibregl.Map({
@@ -223,6 +271,11 @@
 
         let currentHighlightedButton = null;
 
+        // Default map settings
+        const defaultCenter = [115.497, -2.308];
+        const defaultZoom = 11;
+
+        // Fetch GeoJSON and populate the dropdown
         fetch(agropolitanUrl)
             .then(response => response.json())
             .then(data => {
@@ -251,22 +304,27 @@
                     }
                 });
 
-                var buttonContainer = document.querySelector('.button-container');
+                const dropdownContainer = document.getElementById('dropdown-container');
+                const resetButton = document.getElementById('reset-button');
+                let currentSelectedItem = null;
 
+                // Populate the dropdown list
                 data.features.forEach(feature => {
                     const areaId = feature.id;
                     const desaName = feature.properties.Desa;
                     const coordinates = feature.geometry.coordinates[0][0];
 
-                    // Create button with unique ID
-                    var button = document.createElement('button');
-                    button.id = `area-button-${areaId}`;
-                    button.textContent = `${areaId} - ${desaName}`;
-                    button.classList.add('btn', 'btn-outline-success', 'm-2');
+                    // Create list item
+                    const listItem = document.createElement('a');
+                    listItem.classList.add('list-group-item', 'list-group-item-action');
+                    listItem.textContent = `${areaId} - ${desaName}`;
+                    listItem.href = '#';
 
-                    feature.buttonElement = button;
+                    // Add click event for each dropdown item
+                    listItem.onclick = (e) => {
+                        e.preventDefault(); // Prevent default behavior
 
-                    button.onclick = () => {
+                        // Fly to the area
                         map.flyTo({
                             center: coordinates,
                             zoom: 14,
@@ -274,60 +332,75 @@
                             curve: 1.5
                         });
 
-                        highlightButton(button);
+                        // Highlight the selected dropdown item
+                        if (currentSelectedItem) {
+                            currentSelectedItem.classList.remove('active');
+                        }
+                        listItem.classList.add('active');
+                        currentSelectedItem = listItem;
                     };
 
-                    buttonContainer.appendChild(button);
+                    dropdownContainer.appendChild(listItem);
                 });
 
+                // Reset button functionality
+                resetButton.onclick = (e) => {
+                    e.preventDefault();
+
+                    // Reset the map view to default
+                    map.flyTo({
+                        center: defaultCenter,
+                        zoom: defaultZoom,
+                        speed: 0.5,
+                        curve: 1.5
+                    });
+
+                    // Remove the active class from the current selected item
+                    if (currentSelectedItem) {
+                        currentSelectedItem.classList.remove('active');
+                        currentSelectedItem = null;
+                    }
+                };
+
                 // Popup for Agropolitan areas
-                var popup = new maplibregl.Popup({
+                const popup = new maplibregl.Popup({
                     closeButton: false,
                     closeOnClick: false
                 });
 
-                function highlightButton(button) {
-                    if (currentHighlightedButton) {
-                        currentHighlightedButton.classList.remove('highlighted');
+                map.on('click', 'agropolitan-areas-layer', function(e) {
+                    const properties = e.features[0].properties;
+                    const desaName = properties.Desa;
+                    const areaId = e.features[0].id;
+
+                    // Fly to and highlight the corresponding list item
+                    const listItem = Array.from(dropdownContainer.children).find(item =>
+                        item.textContent.startsWith(`${areaId} -`)
+                    );
+
+                    if (listItem) {
+                        listItem.click(); // Trigger click for flyTo and highlight
                     }
 
-                    button.classList.add('highlighted');
-                    currentHighlightedButton = button;
-                }
-
-                map.on('click', 'agropolitan-areas-layer', function(e) {
-                    var properties = e.features[0].properties;
-                    var desaName = properties.Desa;
-                    var areaId = e.features[0].id;
-                    var kecamatan = properties.Kecamatan;
-                    var klsLereng = properties.Kls_lereng;
-                    var irigasi = properties.Irigasi;
-
+                    // Set popup content
                     popup.setLngLat(e.lngLat)
                         .setHTML(`
-                        <strong>${areaId} - ${desaName}</strong><br>
-                        <strong>Kecamatan:</strong> ${kecamatan}<br>
-                        <strong>Kelas Lereng:</strong> ${klsLereng}<br>
-                        <strong>Irigasi:</strong> ${irigasi}
-                    `)
+                    <strong>${areaId} - ${desaName}</strong><br>
+                    <strong>Kecamatan:</strong> ${properties.Kecamatan}<br>
+                    <strong>Kelas Lereng:</strong> ${properties.Kls_lereng}<br>
+                    <strong>Irigasi:</strong> ${properties.Irigasi}
+                `)
                         .addTo(map);
-
-                    var button = document.getElementById(`area-button-${areaId}`);
-                    if (button) {
-                        highlightButton(button);
-                    }
-
-                    map.getCanvas().style.cursor = 'pointer';
                 });
 
+                // Reset popup and selection on right-click
                 map.getCanvas().addEventListener('contextmenu', function(e) {
-                    e.preventDefault(); // Prevent the context menu from appearing
+                    e.preventDefault();
                     popup.remove();
-                    map.getCanvas().style.cursor = '';
 
-                    if (currentHighlightedButton) {
-                        currentHighlightedButton.classList.remove('highlighted');
-                        currentHighlightedButton = null;
+                    if (currentSelectedItem) {
+                        currentSelectedItem.classList.remove('active');
+                        currentSelectedItem = null;
                     }
                 });
             });
