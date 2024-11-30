@@ -312,13 +312,18 @@ return [
 
         // Sidebar items:
         [
+            'text' => 'Halaman Depan',
+            'url' => '/',
+            'icon' => 'fas fa-fw fa-home',
+        ],
+        [
             'text' => 'Dashboard',
             'url' => '/dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
         ['header' => 'Manajemen Data'],
         [
-            'text' => 'Data Geospasial',
+            'text' => 'Area Potensial',
             'url' => '#',
             'icon' => 'fas fa-fw fa-map',
         ],
@@ -427,6 +432,16 @@ return [
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
                 ],
+            ],
+        ],
+        'icheckBootstrap' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/icheck-bootstrap/icheck-bootstrap.min.css',
+                ]
             ],
         ],
     ],

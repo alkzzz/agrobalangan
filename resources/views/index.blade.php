@@ -58,6 +58,96 @@
             background-color: #dc3545;
             color: white;
         }
+
+        #layer-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: center;
+        }
+
+        .form-check-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-check-label {
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-check-input:checked {
+            background-color: #000000;
+        }
+
+        #toggle-rivers:checked {
+            background-color: #1E90FF;
+        }
+
+        #toggle-soil:checked {
+            background-color: #A0522D;
+        }
+
+        #toggle-irrigation:checked {
+            background-color: #0E7490;
+        }
+
+        #toggle-roads:checked {
+            background-color: #D22B2B;
+        }
+
+        #toggle-land-ownership:checked {
+            background-color: #32CD32;
+        }
+
+        #label-borders {
+            color: #000000;
+        }
+
+        #label-rivers {
+            color: #1E90FF;
+        }
+
+        #label-soil {
+            color: #A0522D;
+        }
+
+        #label-irrigation {
+            color: #0E7490;
+        }
+
+        #label-roads {
+            color: #D22B2B;
+        }
+
+        #label-land-ownership {
+            color: #32CD32;
+        }
+
+        .card {
+            border: none;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            padding: 1px;
+        }
     </style>
 </head>
 
@@ -122,14 +212,57 @@
                         <!-- Dynamic Dropdown Items -->
                     </div>
                 </div>
-                <!-- Map Container -->
+                <!-- Map and Layer Controls -->
                 <div class="col-md-9">
-                    <div id="map" class="shadow"></div>
+                    <div id="map" class="shadow mb-3"></div>
+                    <!-- Layer Controls -->
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div id="layer-controls" class="mt-3">
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-borders" id="label-borders">
+                                        <input type="checkbox" class="form-check-input" id="toggle-borders" checked>
+                                        Batas Desa
+                                    </label>
+                                </div>
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-rivers" id="label-rivers">
+                                        <input type="checkbox" class="form-check-input" id="toggle-rivers">
+                                        Sungai
+                                    </label>
+                                </div>
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-soil" id="label-soil">
+                                        <input type="checkbox" class="form-check-input" id="toggle-soil">
+                                        Jenis Tanah
+                                    </label>
+                                </div>
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-irrigation" id="label-irrigation">
+                                        <input type="checkbox" class="form-check-input" id="toggle-irrigation">
+                                        Irigasi
+                                    </label>
+                                </div>
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-roads" id="label-roads">
+                                        <input type="checkbox" class="form-check-input" id="toggle-roads">
+                                        Jalan Pendukung
+                                    </label>
+                                </div>
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-land-ownership"
+                                        id="label-land-ownership">
+                                        <input type="checkbox" class="form-check-input" id="toggle-land-ownership">
+                                        Kepemilikan Lahan
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
 
     <!-- Featured Stats -->
     <section id="statistik" class="py-5 bg-light">
@@ -241,199 +374,169 @@
     <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 
     <script>
-        var agropolitanUrl = "{{ asset('geojson/Agropolitan.json') }}";
-        var administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
+        document.addEventListener('DOMContentLoaded', function() {
+            const agropolitanUrl = "{{ route('potential-area.geojson') }}";
+            const administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
 
-        var map = new maplibregl.Map({
-            container: 'map',
-            style: {
-                "version": 8,
-                "sources": {
-                    "osm": {
+            const map = new maplibregl.Map({
+                container: 'map',
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "osm": {
+                            "type": "raster",
+                            "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                            "tileSize": 256
+                        }
+                    },
+                    "layers": [{
+                        "id": "osm-tiles",
                         "type": "raster",
-                        "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-                        "tileSize": 256
-                    }
+                        "source": "osm",
+                        "minzoom": 0,
+                        "maxzoom": 19
+                    }]
                 },
-                "layers": [{
-                    "id": "osm-tiles",
-                    "type": "raster",
-                    "source": "osm",
-                    "minzoom": 0,
-                    "maxzoom": 19
-                }]
-            },
-            center: [115.497, -2.308],
-            zoom: 11
-        });
+                center: [115.497, -2.308],
+                zoom: 11
+            });
 
-        map.addControl(new maplibregl.NavigationControl());
+            map.addControl(new maplibregl.NavigationControl());
 
-        let currentHighlightedButton = null;
-
-        // Default map settings
-        const defaultCenter = [115.497, -2.308];
-        const defaultZoom = 11;
-
-        // Fetch GeoJSON and populate the dropdown
-        fetch(agropolitanUrl)
-            .then(response => response.json())
-            .then(data => {
-                map.addSource('agropolitan-areas', {
-                    'type': 'geojson',
-                    'data': data
+            const resetZoom = () => {
+                map.flyTo({
+                    center: [115.497, -2.308],
+                    zoom: 11,
+                    speed: 0.5,
+                    curve: 1.5
                 });
+            };
 
-                map.addLayer({
-                    'id': 'agropolitan-areas-layer',
-                    'type': 'fill',
-                    'source': 'agropolitan-areas',
-                    'paint': {
-                        'fill-color': '#00FF00',
-                        'fill-opacity': 0.5
-                    }
-                });
+            document.getElementById('reset-button').addEventListener('click', function(event) {
+                event.preventDefault();
+                resetZoom();
+            });
 
-                map.addLayer({
-                    'id': 'agropolitan-areas-borders',
-                    'type': 'line',
-                    'source': 'agropolitan-areas',
-                    'paint': {
-                        'line-color': '#008000',
-                        'line-width': 2
-                    }
-                });
+            let popup = new maplibregl.Popup();
 
-                const dropdownContainer = document.getElementById('dropdown-container');
-                const resetButton = document.getElementById('reset-button');
-                let currentSelectedItem = null;
-
-                // Populate the dropdown list
-                data.features.forEach(feature => {
-                    const areaId = feature.id;
-                    const desaName = feature.properties.Desa;
-                    const coordinates = feature.geometry.coordinates[0][0];
-
-                    // Create list item
-                    const listItem = document.createElement('a');
-                    listItem.classList.add('list-group-item', 'list-group-item-action');
-                    listItem.textContent = `${areaId} - ${desaName}`;
-                    listItem.href = '#';
-
-                    // Add click event for each dropdown item
-                    listItem.onclick = (e) => {
-                        e.preventDefault(); // Prevent default behavior
-
-                        // Fly to the area
-                        map.flyTo({
-                            center: coordinates,
-                            zoom: 14,
-                            speed: 0.5,
-                            curve: 1.5
+            map.on('load', () => {
+                fetch(agropolitanUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        map.addSource('agropolitan', {
+                            type: 'geojson',
+                            data
                         });
 
-                        // Highlight the selected dropdown item
-                        if (currentSelectedItem) {
-                            currentSelectedItem.classList.remove('active');
-                        }
-                        listItem.classList.add('active');
-                        currentSelectedItem = listItem;
-                    };
+                        map.addLayer({
+                            id: 'agropolitan-layer',
+                            type: 'fill',
+                            source: 'agropolitan',
+                            paint: {
+                                'fill-color': '#00FF00',
+                                'fill-opacity': 0.5
+                            }
+                        });
 
-                    dropdownContainer.appendChild(listItem);
-                });
+                        map.addLayer({
+                            id: 'agropolitan-borders',
+                            type: 'line',
+                            source: 'agropolitan',
+                            paint: {
+                                'line-color': '#008000',
+                                'line-width': 2
+                            }
+                        });
 
-                // Reset button functionality
-                resetButton.onclick = (e) => {
-                    e.preventDefault();
+                        const dropdownContainer = document.getElementById('dropdown-container');
+                        data.features.forEach((feature, index) => {
+                            const {
+                                desa,
+                                kecamatan
+                            } = feature.properties;
+                            const coordinates = feature.geometry.coordinates[0][0];
+                            const listItem = document.createElement('a');
+                            listItem.classList.add('list-group-item', 'list-group-item-action');
+                            listItem.textContent = `${index + 1} - ${desa} (${kecamatan})`;
+                            listItem.href = '#';
 
-                    // Reset the map view to default
-                    map.flyTo({
-                        center: defaultCenter,
-                        zoom: defaultZoom,
-                        speed: 0.5,
-                        curve: 1.5
+                            listItem.onclick = (e) => {
+                                e.preventDefault();
+                                map.flyTo({
+                                    center: coordinates,
+                                    zoom: 14,
+                                    speed: 0.5,
+                                    curve: 1.5
+                                });
+                            };
+
+                            dropdownContainer.appendChild(listItem);
+                        });
+
+                        map.on('click', 'agropolitan-layer', function(e) {
+                            const coordinates = e.lngLat;
+                            const properties = e.features[0].properties;
+                            const info = `
+                                <strong>Desa:</strong> ${properties.desa}<br>
+                                <strong>Kecamatan:</strong> ${properties.kecamatan}<br>
+                                <strong>Kls Lereng:</strong> ${properties.kls_lereng || 'N/A'}<br>
+                                <strong>Irigasi:</strong> ${properties.irigasi || 'N/A'}
+                            `;
+                            popup.setLngLat(coordinates).setHTML(info).addTo(map);
+                        });
+
+                        map.on('contextmenu', () => {
+                            popup.remove();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading Agropolitan data:', error);
                     });
 
-                    // Remove the active class from the current selected item
-                    if (currentSelectedItem) {
-                        currentSelectedItem.classList.remove('active');
-                        currentSelectedItem = null;
-                    }
-                };
+                fetch(administrasiDesaUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        map.addSource('administrasi', {
+                            type: 'geojson',
+                            data
+                        });
 
-                // Popup for Agropolitan areas
-                const popup = new maplibregl.Popup({
-                    closeButton: false,
-                    closeOnClick: false
-                });
+                        map.addLayer({
+                            id: 'administrasi-layer',
+                            type: 'fill',
+                            source: 'administrasi',
+                            paint: {
+                                'fill-color': '#FFFFFF',
+                                'fill-opacity': 0.1
+                            }
+                        });
 
-                map.on('click', 'agropolitan-areas-layer', function(e) {
-                    const properties = e.features[0].properties;
-                    const desaName = properties.Desa;
-                    const areaId = e.features[0].id;
-
-                    // Fly to and highlight the corresponding list item
-                    const listItem = Array.from(dropdownContainer.children).find(item =>
-                        item.textContent.startsWith(`${areaId} -`)
-                    );
-
-                    if (listItem) {
-                        listItem.click(); // Trigger click for flyTo and highlight
-                    }
-
-                    // Set popup content
-                    popup.setLngLat(e.lngLat)
-                        .setHTML(`
-                    <strong>${areaId} - ${desaName}</strong><br>
-                    <strong>Kecamatan:</strong> ${properties.Kecamatan}<br>
-                    <strong>Kelas Lereng:</strong> ${properties.Kls_lereng}<br>
-                    <strong>Irigasi:</strong> ${properties.Irigasi}
-                `)
-                        .addTo(map);
-                });
-
-                // Reset popup and selection on right-click
-                map.getCanvas().addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    popup.remove();
-
-                    if (currentSelectedItem) {
-                        currentSelectedItem.classList.remove('active');
-                        currentSelectedItem = null;
-                    }
-                });
+                        map.addLayer({
+                            id: 'administrasi-borders',
+                            type: 'line',
+                            source: 'administrasi',
+                            paint: {
+                                'line-color': '#000000',
+                                'line-width': 0.5
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading Administrasi Desa data:', error);
+                    });
             });
 
-        // Add the Administrasi Desa layer
-        fetch(administrasiDesaUrl)
-            .then(response => response.json())
-            .then(data => {
-                map.addSource('administrasi-desa', {
-                    'type': 'geojson',
-                    'data': data
+            const toggleLayer = (checkboxId, layerIds) => {
+                const isChecked = document.getElementById(checkboxId).checked;
+                layerIds.forEach(layerId => {
+                    map.setLayoutProperty(layerId, 'visibility', isChecked ? 'visible' : 'none');
                 });
+            };
 
-                map.addLayer({
-                    'id': 'administrasi-desa-fill',
-                    'type': 'fill',
-                    'source': 'administrasi-desa',
-                    'paint': {
-                        'fill-color': '#FFFFFF',
-                        'fill-opacity': 0.1
-                    }
-                });
-
-                map.addLayer({
-                    'id': 'administrasi-desa-borders',
-                    'type': 'line',
-                    'source': 'administrasi-desa',
-                    'paint': {
-                        'line-color': '#000000',
-                        'line-width': 0.5
-                    }
-                });
+            document.getElementById('toggle-borders').addEventListener('change', () => {
+                toggleLayer('toggle-borders', ['administrasi-layer', 'administrasi-borders']);
             });
+        });
     </script>
 </body>
 
