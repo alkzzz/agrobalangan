@@ -324,7 +324,7 @@ return [
         ['header' => 'Manajemen Data'],
         [
             'text' => 'Area Potensial',
-            'url' => '#',
+            'url' => 'area-potensial',
             'icon' => 'fas fa-fw fa-map',
         ],
     ],

@@ -25,130 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/front.css') }}">
-
-    <style>
-        #map {
-            width: 100%;
-            height: 500px;
-        }
-
-        #dropdown-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .list-group-item {
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .list-group-item:hover,
-        .list-group-item.active {
-            background-color: #28a745;
-            color: white;
-        }
-
-        #reset-button {
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        #reset-button:hover {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        #layer-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: center;
-        }
-
-        .form-check-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-check-label {
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            cursor: pointer;
-        }
-
-        .form-check-input {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border: none;
-            border-radius: 4px;
-            appearance: none;
-            outline: none;
-            cursor: pointer;
-            background-color: #f1f1f1;
-            transition: background-color 0.3s ease;
-        }
-
-        .form-check-input:checked {
-            background-color: #000000;
-        }
-
-        #toggle-rivers:checked {
-            background-color: #1E90FF;
-        }
-
-        #toggle-soil:checked {
-            background-color: #A0522D;
-        }
-
-        #toggle-irrigation:checked {
-            background-color: #0E7490;
-        }
-
-        #toggle-roads:checked {
-            background-color: #D22B2B;
-        }
-
-        #toggle-land-ownership:checked {
-            background-color: #32CD32;
-        }
-
-        #label-borders {
-            color: #000000;
-        }
-
-        #label-rivers {
-            color: #1E90FF;
-        }
-
-        #label-soil {
-            color: #A0522D;
-        }
-
-        #label-irrigation {
-            color: #0E7490;
-        }
-
-        #label-roads {
-            color: #D22B2B;
-        }
-
-        #label-land-ownership {
-            color: #32CD32;
-        }
-
-        .card {
-            border: none;
-            border-radius: 6px;
-            background-color: #f8f9fa;
-            padding: 1px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/frontmap.css') }}">
 </head>
 
 <body>
@@ -377,6 +254,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const agropolitanUrl = "{{ route('potential-area.geojson') }}";
             const administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
+            const sungaiUrl = "{{ asset('geojson/Sungai.json') }}";
+            const tanahUrl = "{{ asset('geojson/Tanah.json') }}";
 
             const map = new maplibregl.Map({
                 container: 'map',
@@ -522,8 +401,81 @@
                         });
                     })
                     .catch(error => {
-                        console.error('Error loading Administrasi Desa data:', error);
+                        console.error('Error loading data batas desa:', error);
                     });
+
+                fetch(sungaiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        map.addSource('sungai', {
+                            type: 'geojson',
+                            data
+                        });
+
+                        map.addLayer({
+                            id: 'sungai-layer',
+                            type: 'line',
+                            source: 'sungai',
+                            layout: {
+                                'visibility': 'none'
+                            },
+                            paint: {
+                                'line-color': '#0000FF',
+                                'line-width': 2
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error loading data sungai:', error));
+
+                fetch(tanahUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        map.addSource('tanah', {
+                            type: 'geojson',
+                            data
+                        });
+
+                        map.addLayer({
+                            id: 'tanah-layer',
+                            type: 'fill',
+                            source: 'tanah',
+                            layout: {
+                                'visibility': 'none'
+                            },
+                            paint: {
+                                'fill-color': [
+                                    'match',
+                                    ['get', 'TANAH1'],
+                                    'No Data', '#808080',
+                                    'ROC', '#C4D600',
+                                    'Typic Endoaquepts', '#A2DB99',
+                                    'Typic Eutrudepts', '#C89DDB',
+                                    'Typic Haplosaprists', '#B7E1D6',
+                                    'Typic Hapludox', '#A3C7E4',
+                                    'Typic Hapludults', '#EDD8C0',
+                                    'Typic Kandiudox', '#C9A89D',
+                                    'Typic Paleudults', '#F1D68A',
+                                    'Typic Plinthudults', '#D9B0E1',
+                                    '#FFFFFF'
+                                ],
+                                'fill-opacity': 0.5
+                            }
+                        });
+
+                        map.addLayer({
+                            id: 'tanah-border-layer',
+                            type: 'line',
+                            source: 'tanah',
+                            layout: {
+                                'visibility': 'none'
+                            },
+                            paint: {
+                                'line-color': '#000000',
+                                'line-width': 1
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error loading data tanah:', error));
             });
 
             const toggleLayer = (checkboxId, layerIds) => {
@@ -535,6 +487,17 @@
 
             document.getElementById('toggle-borders').addEventListener('change', () => {
                 toggleLayer('toggle-borders', ['administrasi-layer', 'administrasi-borders']);
+            });
+
+            document.getElementById('toggle-rivers').addEventListener('change', () => {
+                toggleLayer('toggle-rivers', ['sungai-layer']);
+            });
+
+            document.getElementById('toggle-soil').addEventListener('change', () => {
+                const isChecked = document.getElementById('toggle-soil').checked;
+                ['tanah-layer', 'tanah-border-layer'].forEach(layerId => {
+                    map.setLayoutProperty(layerId, 'visibility', isChecked ? 'visible' : 'none');
+                });
             });
         });
     </script>

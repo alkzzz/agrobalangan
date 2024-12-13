@@ -11,5 +11,9 @@ Auth::routes();
 
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
-Route::get('/potential-areas', [PotentialAreaController::class, 'index'])->name('potential-area.index');
-Route::get('/potential-areas/geojson', [PotentialAreaController::class, 'geojson'])->name('potential-area.geojson');
+Route::get('/area-potensial', [PotentialAreaController::class, 'index'])->name('potential-area.index');
+Route::get('/area-potensial/geojson', [PotentialAreaController::class, 'geojson'])->name('potential-area.geojson');
+Route::get('/area-potensial/{id}', [PotentialAreaController::class, 'show'])->name('potential-area.show');
+Route::post('/area-potensial', [PotentialAreaController::class, 'store'])->name('potential-area.store');
+Route::patch('/area-potensial/{id}', [PotentialAreaController::class, 'update'])->name('potential-area.update');
+Route::delete('/area-potensial/{id}', [PotentialAreaController::class, 'destroy'])->name('potential-area.destroy');

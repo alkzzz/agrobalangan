@@ -21,5 +21,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@agrobalangan.com',
             'password' => bcrypt(12345678)
         ]);
+
+        $this->call(PotentialAreaSeeder::class);
     }
 }
