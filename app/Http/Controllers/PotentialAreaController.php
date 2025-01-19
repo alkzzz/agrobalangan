@@ -11,8 +11,7 @@ class PotentialAreaController extends Controller
 
     public function index()
     {
-        $data = PotentialArea::where('id', '!=', 17)
-            ->whereNotNull('geometry')
+        $data = PotentialArea::whereNotNull('geometry')
             ->orderBy('kecamatan')
             ->get();
 
@@ -21,18 +20,30 @@ class PotentialAreaController extends Controller
 
     public function geojson()
     {
-        $data = PotentialArea::where('id', '!=', 17)
-            ->whereNotNull('geometry')
+        $data = PotentialArea::whereNotNull('geometry')
             ->orderBy('kecamatan')
             ->get()
             ->map(function ($item) {
-                if (!$item->geometry instanceof \MatanYadaev\EloquentSpatial\Objects\Polygon) {
+                if ($item->geometry instanceof \MatanYadaev\EloquentSpatial\Objects\Polygon) {
+                    $geometry = json_decode($item->geometry->toJson());
+                } elseif ($item->geometry instanceof \MatanYadaev\EloquentSpatial\Objects\MultiPolygon) {
+                    $geometry = json_decode($item->geometry->toJson());
+
+                    // Flatten MultiPolygon to get the first polygon's first coordinate for map clicks
+                    if (isset($geometry->coordinates[0][0][0])) {
+                        $geometry->center = $geometry->coordinates[0][0][0];
+                    }
+                } else {
+                    \Log::error('Unsupported geometry type found.', [
+                        'id' => $item->id,
+                        'type' => get_class($item->geometry),
+                    ]);
                     return null;
                 }
 
                 return [
                     'type' => 'Feature',
-                    'geometry' => json_decode($item->geometry->toJson()),
+                    'geometry' => $geometry,
                     'properties' => [
                         'objectid' => $item->objectid,
                         'desa' => $item->desa,
@@ -47,17 +58,19 @@ class PotentialAreaController extends Controller
                         'tanaman_potensial' => $item->tanaman_potensial,
                         'keterangan' => $item->keterangan,
                         'rekomendasi' => $item->rekomendasi,
+                        'center' => $geometry->center ?? null, // Add center for easier click handling
                     ],
                 ];
             })->filter();
 
         $geojson = [
             'type' => 'FeatureCollection',
-            'features' => $data->toArray(),
+            'features' => $data->values()->toArray(),
         ];
 
         return response()->json($geojson, 200, [], JSON_UNESCAPED_UNICODE);
     }
+
 
     public function show($id)
     {

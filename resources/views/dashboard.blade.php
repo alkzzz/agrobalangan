@@ -149,7 +149,19 @@
                                 desa,
                                 kecamatan
                             } = feature.properties;
-                            const coordinates = feature.geometry.coordinates[0][0];
+                            let coordinates;
+
+                            // Handle both Polygon and MultiPolygon types
+                            if (feature.geometry.type === "Polygon") {
+                                coordinates = feature.geometry.coordinates[0][0];
+                            } else if (feature.geometry.type === "MultiPolygon") {
+                                coordinates = feature.geometry.coordinates[0][0][0];
+                            } else {
+                                console.error("Unsupported geometry type:", feature.geometry
+                                    .type);
+                                return; // Skip if not a supported type
+                            }
+
                             const listItem = document.createElement('a');
                             listItem.classList.add('list-group-item', 'list-group-item-action');
                             listItem.textContent = `${index + 1} - ${desa} (${kecamatan})`;
@@ -167,6 +179,7 @@
 
                             dropdownContainer.appendChild(listItem);
                         });
+
 
                         map.on('click', 'agropolitan-layer', function(e) {
                             const coordinates = e.lngLat;

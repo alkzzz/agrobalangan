@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use MatanYadaev\EloquentSpatial\Traits\HasSpatial;
-use MatanYadaev\EloquentSpatial\Objects\Polygon;
+use MatanYadaev\EloquentSpatial\Objects\Geometry;
 
 class PotentialArea extends Model
 {
@@ -30,6 +30,6 @@ class PotentialArea extends Model
     ];
 
     protected $casts = [
-        'geometry' => Polygon::class,
+        'geometry' => Geometry::class,
     ];
 }
