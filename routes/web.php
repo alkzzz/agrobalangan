@@ -14,11 +14,5 @@ Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'inde
 
 Route::get('/lokasi-agropolitan/geojson', [LokasiAgropolitanController::class, 'geojson'])->name('lokasi-agropolitan.geojson');
 
-Route::resource('/lokasi-agropolitan', LokasiAgropolitanController::class);
-
-// Route::get('/area-potensial', [PotentialAreaController::class, 'index'])->name('potential-area.index');
-// Route::get('/area-potensial/geojson', [PotentialAreaController::class, 'geojson'])->name('potential-area.geojson');
-// Route::get('/area-potensial/{id}', [PotentialAreaController::class, 'show'])->name('potential-area.show');
-// Route::post('/area-potensial', [PotentialAreaController::class, 'store'])->name('potential-area.store');
-// Route::patch('/area-potensial/{id}', [PotentialAreaController::class, 'update'])->name('potential-area.update');
-// Route::delete('/area-potensial/{id}', [PotentialAreaController::class, 'destroy'])->name('potential-area.destroy');
+Route::get('/lokasi-agropolitan', [LokasiAgropolitanController::class, 'index'])->name('lokasi-agropolitan.index');
+Route::get('/lokasi-agropolitan/details/{id}', [LokasiAgropolitanController::class, 'detail'])->name('lokasi-agropolitan.detail');

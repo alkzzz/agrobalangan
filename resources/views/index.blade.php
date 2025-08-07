@@ -183,21 +183,23 @@
                         <div class="card-body p-4">
                             <div class="text-center mb-4">
                                 <i class="fas fa-building text-success fa-3x mb-3"></i>
-                                <h3 class="h4">Dinas Pertanian Kabupaten Balangan</h3>
+                                <h3 class="h4">Dinas Ketahanan Pangan, Pertanian dan Perikanan Kabupaten Balangan
+                                </h3>
                             </div>
                             <ul class="list-unstyled">
                                 <li class="mb-3">
                                     <i class="fas fa-map-marker-alt text-success me-2"></i>
-                                    Jl. Raya Utara No.123, Kabupaten Balangan
+                                    Jalan Jend. A. Yani No.Km.4 5, Batu Piring, Paringin Selatan, Balangan Regency,
+                                    South Kalimantan 71618
                                 </li>
                                 <li class="mb-3">
                                     <i class="fas fa-phone text-success me-2"></i>
-                                    (0511) 123-4567
+                                    (0526) 2029499
                                 </li>
                                 <li class="mb-3">
                                     <i class="fas fa-envelope text-success me-2"></i>
-                                    <a href="mailto:info@dinaspertanianbalangan.go.id" class="text-decoration-none">
-                                        info@dinaspertanianbalangan.go.id
+                                    <a href="mailto:distan.balangankab@gmail.com" class="text-decoration-none">
+                                        distan.balangankab@gmail.com
                                     </a>
                                 </li>
                             </ul>
@@ -217,9 +219,12 @@
                         undang-undang.</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    <a href="https://dkppp.balangankab.go.id/portal/index.php" target="_blank"
+                        class="text-white me-3"><i class="fab fa-internet-explorer"></i></a>
+                    <a href="https://www.instagram.com/dkppp_balangan_/" target="_blank" class="text-white"><i
+                            class="fab fa-instagram"></i></a>
+                    <a href="https://www.youtube.com/@CeritaTani-bu6vy" target="_blank" class="text-white ms-3"><i
+                            class="fab fa-youtube"></i></a>
                 </div>
             </div>
         </div>
@@ -359,7 +364,7 @@
                             type: 'fill',
                             source: 'agropolitan',
                             paint: {
-                                'fill-color': '#008000',
+                                'fill-color': '#00FF00',
                                 'fill-opacity': 0.7
                             }
                         });

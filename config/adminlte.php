@@ -321,11 +321,15 @@ return [
             'url' => '/dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
-        ['header' => 'Manajemen Data'],
         [
             'text' => 'Lokasi Agropolitan',
             'url' => 'lokasi-agropolitan',
             'icon' => 'fas fa-fw fa-map',
+        ],
+        [
+            'text' => 'Logout',
+            'url' => 'logout',
+            'icon' => 'fas fa-fw fa-power-off',
         ],
     ],
 

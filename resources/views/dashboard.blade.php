@@ -202,7 +202,7 @@
                             type: 'fill',
                             source: 'agropolitan',
                             paint: {
-                                'fill-color': '#008000',
+                                'fill-color': '#00FF00',
                                 'fill-opacity': 0.7
                             }
                         });
@@ -272,10 +272,18 @@
                         map.on('click', 'agropolitan-layer', function(e) {
                             const coordinates = e.lngLat;
                             const properties = e.features[0].properties;
+                            const detailUrl = `/lokasi-agropolitan/details/${properties.id}`;
                             const info = `
-                                <strong>Kecamatan:</strong> ${properties.kecamatan}<br>
-                                <strong>Kls Lereng:</strong> ${properties.kls_lereng || 'N/A'}<br>
-                                <strong>Irigasi:</strong> ${properties.irigasi || 'N/A'}
+                                <div>
+                                    <strong>Kecamatan:</strong> ${properties.kecamatan}<br>
+                                    <strong>Kls Lereng:</strong> ${properties.kls_lereng || 'N/A'}<br>
+                                    <strong>Irigasi:</strong> ${properties.irigasi || 'N/A'}
+                                    <hr class="my-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-success" style="color: white;">
+                                        <i class="fas fa-search-location mr-1"></i>
+                                        Lihat Detail
+                                    </a>
+                                </div>
                             `;
                             popup.setLngLat(coordinates).setHTML(info).addTo(map);
                         });

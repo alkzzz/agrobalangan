@@ -13,12 +13,6 @@
 
 @section('content')
     <div class="card">
-        <div class="card-header">
-            {{-- Tombol Tambah Data (akan berfungsi nanti saat method create & store dibuat) --}}
-            <a href="{{ route('lokasi-agropolitan.create') }}" class="btn btn-success">
-                <i class="fas fa-plus"></i> Tambah Lokasi
-            </a>
-        </div>
         <div class="card-body">
             <table id="lokasiTable" class="table table-bordered table-striped">
                 <thead>
@@ -37,27 +31,14 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $lokasi->kecamatan->name }}</td>
-                            <td>{{ $lokasi->luas_ha }}</td>
+                            <td>{{ number_format($lokasi->luas_ha, 2, ',', '.') }}</td>
                             <td>{{ $lokasi->irigasi }}</td>
                             <td>{{ $lokasi->kls_lereng }}</td>
                             <td>
-                                {{-- Tombol Aksi (Lihat, Edit, Hapus) --}}
-                                <a href="{{ route('lokasi-agropolitan.show', $lokasi->id) }}" class="btn btn-info btn-sm">
-                                    <i class="fas fa-eye"></i>
+                                <a href="{{ route('lokasi-agropolitan.detail', $lokasi->id) }}" class="btn btn-danger"><i
+                                        class="fas fa-list-ul"></i>
+                                    Detail
                                 </a>
-                                <a href="{{ route('lokasi-agropolitan.edit', $lokasi->id) }}"
-                                    class="btn btn-primary btn-sm">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('lokasi-agropolitan.destroy', $lokasi->id) }}" method="POST"
-                                    class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
                             </td>
                         </tr>
                     @endforeach

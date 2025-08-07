@@ -39,51 +39,31 @@ class LokasiAgropolitanController extends Controller
         return view('lokasi_agropolitan.index', compact('lokasiAgropolitan'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function detail($id)
     {
-        //
-    }
+        $lokasi = LokasiAgropolitan::with('kecamatan')->findOrFail($id);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $feature = [
+            'type' => 'Feature',
+            // UBAH BARIS INI: Konversi objek Geometri menjadi array
+            'geometry' => $lokasi->geometri->toArray(),
+            'properties' => [
+                'id' => $lokasi->id,
+                'kecamatan' => $lokasi->kecamatan->name ?? 'N/A',
+                'luas_ha' => $lokasi->luas_ha,
+            ]
+        ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $geoJsonData = [
+            'type' => 'FeatureCollection',
+            'features' => [$feature]
+        ];
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        // dd($geoJsonData); // Debugging: Tampilkan GeoJSON
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return view('lokasi_agropolitan.detail', [
+            'lokasi' => $lokasi,
+            'geoJsonData' => $geoJsonData
+        ]);
     }
 }
