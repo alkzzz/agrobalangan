@@ -323,8 +323,8 @@ return [
         ],
         ['header' => 'Manajemen Data'],
         [
-            'text' => 'Area Potensial',
-            'url' => 'area-potensial',
+            'text' => 'Lokasi Agropolitan',
+            'url' => 'lokasi-agropolitan',
             'icon' => 'fas fa-fw fa-map',
         ],
     ],

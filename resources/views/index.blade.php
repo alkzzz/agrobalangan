@@ -48,14 +48,21 @@
                         <a class="nav-link" href="#peta-interaktif">Peta Interaktif</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#statistik">Statistik</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="#informasi-umum">Informasi</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#kontak">Kontak</a>
                     </li>
+                    @guest
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">Login</a>
+                        </li>
+                    @endguest
+                    @auth
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                        </li>
+                    @endauth
                 </ul>
             </div>
         </div>
@@ -99,7 +106,7 @@
                                 <div class="form-check-wrapper">
                                     <label class="form-check-label" for="toggle-borders" id="label-borders">
                                         <input type="checkbox" class="form-check-input" id="toggle-borders" checked>
-                                        Batas Desa
+                                        Batas Kecamatan
                                     </label>
                                 </div>
                                 <div class="form-check-wrapper">
@@ -112,6 +119,12 @@
                                     <label class="form-check-label" for="toggle-soil" id="label-soil">
                                         <input type="checkbox" class="form-check-input" id="toggle-soil">
                                         Jenis Tanah
+                                    </label>
+                                </div>
+                                <div class="form-check-wrapper">
+                                    <label class="form-check-label" for="toggle-land-cover" id="label-land-cover">
+                                        <input type="checkbox" class="form-check-input" id="toggle-land-cover">
+                                        Tutupan Lahan
                                     </label>
                                 </div>
                                 <div class="form-check-wrapper">
@@ -139,40 +152,6 @@
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Featured Stats -->
-    <section id="statistik" class="py-5 bg-light">
-        <div class="container">
-            <div class="row g-4 justify-content-center">
-                <div class="col-md-4">
-                    <div class="feature-card card h-100 p-4 text-center">
-                        <div class="card-body">
-                            <i class="fas fa-leaf text-success fa-3x mb-3"></i>
-                            <h3 class="card-title h4 mb-3">Lahan Pertanian</h3>
-                            <p class="card-text text-muted">50,000+ Hektar</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card card h-100 p-4 text-center">
-                        <div class="card-body">
-                            <i class="fas fa-users text-success fa-3x mb-3"></i>
-                            <h3 class="card-title h4 mb-3">Petani Aktif</h3>
-                            <p class="card-text text-muted">10,000+ Petani</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card card h-100 p-4 text-center">
-                        <div class="card-body">
-                            <i class="fas fa-seedling text-success fa-3x mb-3"></i>
-                            <h3 class="card-title h4 mb-3">Komoditas</h3>
-                            <p class="card-text text-muted">15+ Jenis Tanaman</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -252,10 +231,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const agropolitanUrl = "{{ route('potential-area.geojson') }}";
-            const administrasiDesaUrl = "{{ asset('geojson/Administrasi_Desa.json') }}";
+            const agropolitanUrl = "{{ route('lokasi-agropolitan.geojson') }}";
+            const batasKecamatan = "{{ asset('geojson/batas_kecamatan.geojson') }}";
             const sungaiUrl = "{{ asset('geojson/Sungai.json') }}";
             const tanahUrl = "{{ asset('geojson/Tanah.json') }}";
+            const tutupanLahanUrl = "{{ asset('geojson/tutupan_lahan.json') }}";
+
+            const newLayerUrl = "{{ asset('geojson/kepemilikan_lahan/lahan_bungur_batumandi.geojson') }}";
 
             const map = new maplibregl.Map({
                 container: 'map',
@@ -281,6 +263,71 @@
             });
 
             map.addControl(new maplibregl.NavigationControl());
+
+            class SoilLegendControl {
+                onAdd(map) {
+                    this._container = document.createElement('div');
+                    this._container.id = 'soil-legend-on-map';
+                    this._container.className = 'map-legend maplibregl-ctrl';
+                    this._container.style.display = 'none';
+                    this._container.innerHTML = `
+            <h6>Legenda Jenis Tanah</h6>
+            <ul class="list-unstyled">
+                <li><span class="legend-color" style="background-color: #BDBDBD;"></span>Batuan Permukaan</li>
+                <li><span class="legend-color" style="background-color: #8FBC8F;"></span>Tanah Aluvial Rawa</li>
+                <li><span class="legend-color" style="background-color: #A0522D;"></span>Tanah Aluvial Subur</li>
+                <li><span class="legend-color" style="background-color: #594640;"></span>Tanah Gambut (Organik)</li>
+                <li><span class="legend-color" style="background-color: #BC8F8F;"></span>Tanah Tropis Lapuk</li>
+                <li><span class="legend-color" style="background-color: #F4A460;"></span>Tanah Podsolik Merah-Kuning</li>
+            </ul>
+        `;
+                    return this._container;
+                }
+
+                onRemove() {
+                    if (this._container && this._container.parentNode) {
+                        this._container.parentNode.removeChild(this._container);
+                    }
+                }
+            }
+
+            class LandCoverLegendControl {
+                onAdd(map) {
+                    this._container = document.createElement('div');
+                    this._container.id = 'landcover-legend-on-map';
+                    this._container.className = 'map-legend maplibregl-ctrl';
+                    this._container.style.display = 'none'; // Sembunyikan secara default
+                    // Isi HTML legenda sesuai dengan gambar Peta Penutupan Lahan
+                    this._container.innerHTML = `
+                <h6>Legenda Tutupan Lahan</h6>
+                <ul class="list-unstyled">
+                    <li><span class="legend-color" style="background-color: #4575b4;"></span>Badan Air</li>
+                    <li><span class="legend-color" style="background-color: #c7e9c0;"></span>Belukar</li>
+                    <li><span class="legend-color" style="background-color: #7fcdbb;"></span>Belukar Rawa</li>
+                    <li><span class="legend-color" style="background-color: #1a9641;"></span>Hutan Lahan Kering Primer</li>
+                    <li><span class="legend-color" style="background-color: #a1d99b;"></span>Hutan Lahan Kering Sekunder</li>
+                    <li><span class="legend-color" style="background-color: #66c2a5;"></span>Hutan Tanaman</li>
+                    <li><span class="legend-color" style="background-color: #fdae61;"></span>Perkebunan</li>
+                    <li><span class="legend-color" style="background-color: #d7191c;"></span>Permukiman</li>
+                    <li><span class="legend-color" style="background-color: #A020F0;"></span>Pertambangan</li>
+                    <li><span class="legend-color" style="background-color: #fef0d9;"></span>Pertanian Lahan Kering</li>
+                    <li><span class="legend-color" style="background-color: #fee08b;"></span>Pertanian Lahan Kering Campur</li>
+                    <li><span class="legend-color" style="background-color: #ffffbf;"></span>Sawah</li>
+                    <li><span class="legend-color" style="background-color: #964B00;"></span>Tanah Terbuka</li>
+                </ul>
+            `;
+                    return this._container;
+                }
+                onRemove() {
+                    this._container.parentNode.removeChild(this._container);
+                }
+            }
+
+            const soilLegendControl = new SoilLegendControl();
+            map.addControl(soilLegendControl, 'top-left');
+
+            const landCoverLegendControl = new LandCoverLegendControl();
+            map.addControl(landCoverLegendControl, 'top-left');
 
             const resetZoom = () => {
                 map.flyTo({
@@ -312,25 +359,39 @@
                             type: 'fill',
                             source: 'agropolitan',
                             paint: {
-                                'fill-color': '#00FF00',
-                                'fill-opacity': 0.5
+                                'fill-color': '#008000',
+                                'fill-opacity': 0.7
                             }
                         });
 
+                        // Layer untuk garis batas poligon
                         map.addLayer({
                             id: 'agropolitan-borders',
                             type: 'line',
                             source: 'agropolitan',
                             paint: {
-                                'line-color': '#008000',
-                                'line-width': 2
+                                'line-color': '#FFD700',
+                                'line-width': 2,
+                                'line-opacity': 0.9
+                            }
+                        });
+
+                        map.addLayer({
+                            id: 'agropolitan-border-casing',
+                            type: 'line',
+                            source: 'agropolitan',
+                            paint: {
+                                'line-color': '#000000',
+                                'line-width': 3,
+                                'line-opacity': 0.7
                             }
                         });
 
                         const dropdownContainer = document.getElementById('dropdown-container');
+
                         data.features.forEach((feature, index) => {
                             const {
-                                desa,
+                                // desa,
                                 kecamatan
                             } = feature.properties;
                             let coordinates;
@@ -343,19 +404,19 @@
                             } else {
                                 console.error("Unsupported geometry type:", feature.geometry
                                     .type);
-                                return; // Skip if not a supported type
+                                return;
                             }
 
                             const listItem = document.createElement('a');
                             listItem.classList.add('list-group-item', 'list-group-item-action');
-                            listItem.textContent = `${index + 1} - ${desa} (${kecamatan})`;
+                            listItem.textContent = `${index + 1} - ${kecamatan}`;
                             listItem.href = '#';
 
                             listItem.onclick = (e) => {
                                 e.preventDefault();
                                 map.flyTo({
                                     center: coordinates,
-                                    zoom: 14,
+                                    zoom: 13,
                                     speed: 0.5,
                                     curve: 1.5
                                 });
@@ -369,7 +430,6 @@
                             const coordinates = e.lngLat;
                             const properties = e.features[0].properties;
                             const info = `
-                                <strong>Desa:</strong> ${properties.desa}<br>
                                 <strong>Kecamatan:</strong> ${properties.kecamatan}<br>
                                 <strong>Kls Lereng:</strong> ${properties.kls_lereng || 'N/A'}<br>
                                 <strong>Irigasi:</strong> ${properties.irigasi || 'N/A'}
@@ -385,7 +445,7 @@
                         console.error('Error loading Agropolitan data:', error);
                     });
 
-                fetch(administrasiDesaUrl)
+                fetch(batasKecamatan)
                     .then(response => response.json())
                     .then(data => {
                         map.addSource('administrasi', {
@@ -409,7 +469,7 @@
                             source: 'administrasi',
                             paint: {
                                 'line-color': '#000000',
-                                'line-width': 0.5
+                                'line-width': 0.7
                             }
                         });
                     })
@@ -458,20 +518,26 @@
                             paint: {
                                 'fill-color': [
                                     'match',
-                                    ['get', 'TANAH1'],
-                                    'No Data', '#808080',
-                                    'ROC', '#C4D600',
-                                    'Typic Endoaquepts', '#A2DB99',
-                                    'Typic Eutrudepts', '#C89DDB',
-                                    'Typic Haplosaprists', '#B7E1D6',
-                                    'Typic Hapludox', '#A3C7E4',
-                                    'Typic Hapludults', '#EDD8C0',
-                                    'Typic Kandiudox', '#C9A89D',
-                                    'Typic Paleudults', '#F1D68A',
-                                    'Typic Plinthudults', '#D9B0E1',
-                                    '#FFFFFF'
+                                    ['get',
+                                        'TANAH1'
+                                    ], // Properti yang digunakan untuk mencocokkan
+
+                                    // ===== PALET WARNA BARU =====
+                                    'ROC', '#BDBDBD', // Batuan Permukaan (Abu-abu muda)
+                                    'Typic Endoaquepts',
+                                    '#8FBC8F', // Tanah Aluvial Rawa (Hijau keabuan)
+                                    'Typic Eutrudepts',
+                                    '#A0522D', // Tanah Aluvial Subur (Coklat subur)
+                                    'Typic Haplosaprists',
+                                    '#594640', // Tanah Gambut/Organik (Coklat sangat gelap)
+                                    'Typic Hapludox',
+                                    '#BC8F8F', // Tanah Tropis Lapuk (Coklat kemerahan)
+                                    'Typic Hapludults',
+                                    '#F4A460', // Tanah Podsolik Merah-Kuning (Kuning pasir)
+                                    'No Data', '#E0E0E0', // Untuk properti 'No Data'
+                                    '#CCCCCC'
                                 ],
-                                'fill-opacity': 0.5
+                                'fill-opacity': 0.8 // Opacity bisa disesuaikan agar terlihat lebih solid
                             }
                         });
 
@@ -489,6 +555,95 @@
                         });
                     })
                     .catch(error => console.error('Error loading data tanah:', error));
+
+                fetch(tutupanLahanUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        map.addSource('landcover', {
+                            type: 'geojson',
+                            data: data
+                        });
+
+                        map.addLayer({
+                            id: 'landcover-layer',
+                            type: 'fill',
+                            source: 'landcover',
+                            layout: {
+                                'visibility': 'none' // Sembunyikan secara default
+                            },
+                            // ...
+                            paint: {
+                                'fill-color': [
+                                    'match',
+                                    ['get', 'PENUTUP_LH'],
+                                    'Badan Air', '#4575b4',
+                                    'Belukar', '#c7e9c0',
+                                    'Belukar Rawa', '#7fcdbb',
+                                    'Hutan Lahan Kering Primer', '#1a9641',
+                                    'Hutan Lahan Kering Sekunder', '#a1d99b',
+                                    'Hutan Tanaman', '#66c2a5',
+                                    'Perkebunan', '#fdae61',
+                                    'Permukiman', '#d7191c',
+                                    'Pertambangan', '#A020F0',
+                                    'Pertanian Lahan Kering', '#fef0d9',
+                                    'Pertanian Lahan Kering Campur', '#fee08b',
+                                    'Sawah', '#ffffbf',
+                                    'Tanah Terbuka', '#964B00',
+                                    '#cccccc' // Warna default jika tidak ada yang cocok
+                                ],
+                                'fill-opacity': 0.7
+                            }
+                            //...
+                        });
+
+                        map.addLayer({
+                            id: 'landcover-border-layer',
+                            type: 'line',
+                            source: 'landcover',
+                            layout: {
+                                'visibility': 'none'
+                            },
+                            paint: {
+                                'line-color': '#000000',
+                                'line-width': 0.5
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error loading land cover data:', error));
+
+                fetch(newLayerUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Add new source
+                        map.addSource('new-layer', {
+                            type: 'geojson',
+                            data: data
+                        });
+
+                        map.addLayer({
+                            id: 'new-layer',
+                            type: 'fill',
+                            source: 'new-layer',
+                            layout: {
+                                'visibility': 'none'
+                            },
+                            paint: {
+                                'fill-color': '#FF0000',
+                                'fill-opacity': 0.5
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error loading new layer:', error));
+
+                if (map.getLayer('agropolitan-layer')) {
+                    map.moveLayer('agropolitan-layer');
+                }
+                if (map.getLayer('agropolitan-border-casing')) {
+                    map.moveLayer('agropolitan-border-casing');
+                }
+                if (map.getLayer('agropolitan-borders')) {
+                    map.moveLayer('agropolitan-borders');
+                }
             });
 
             const toggleLayer = (checkboxId, layerIds) => {
@@ -506,12 +661,51 @@
                 toggleLayer('toggle-rivers', ['sungai-layer']);
             });
 
-            document.getElementById('toggle-soil').addEventListener('change', () => {
-                const isChecked = document.getElementById('toggle-soil').checked;
-                ['tanah-layer', 'tanah-border-layer'].forEach(layerId => {
-                    map.setLayoutProperty(layerId, 'visibility', isChecked ? 'visible' : 'none');
+            document.getElementById('toggle-soil').addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const soilLegend = document.getElementById('soil-legend-on-map');
+
+                ['tanah-layer', 'tanah-border-layer'].forEach(id => {
+                    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', isChecked ?
+                        'visible' : 'none');
                 });
+                if (soilLegend) soilLegend.style.display = isChecked ? 'block' : 'none';
+
+                if (isChecked) {
+                    const landCoverCheckbox = document.getElementById('toggle-land-cover');
+                    if (landCoverCheckbox.checked) {
+                        landCoverCheckbox.checked = false;
+                        // Picu event 'change' secara manual untuk menonaktifkan layer & legenda Tutupan Lahan
+                        landCoverCheckbox.dispatchEvent(new Event('change'));
+                    }
+                }
             });
+
+            document.getElementById('toggle-land-cover').addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const landCoverLegend = document.getElementById('landcover-legend-on-map');
+
+                ['landcover-layer', 'landcover-border-layer'].forEach(id => {
+                    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', isChecked ?
+                        'visible' : 'none');
+                });
+                if (landCoverLegend) landCoverLegend.style.display = isChecked ? 'block' : 'none';
+
+                if (isChecked) {
+                    const soilCheckbox = document.getElementById('toggle-soil');
+                    if (soilCheckbox.checked) {
+                        soilCheckbox.checked = false;
+                        soilCheckbox.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+
+            document.getElementById('toggle-land-ownership').addEventListener('change', () => {
+                toggleLayer('toggle-land-ownership', [
+                    'new-layer'
+                ]);
+            });
+
         });
     </script>
 </body>

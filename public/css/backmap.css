@@ -11,6 +11,42 @@
     height: 500px;
 }
 
+.map-legend {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 0.875rem;
+}
+
+.map-legend h6 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.map-legend ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.map-legend li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-color {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
 /* Dropdown Container Styling */
 #dropdown-container {
     max-height: 500px;
@@ -21,6 +57,10 @@
 .list-group-item {
     cursor: pointer;
     transition: background-color 0.3s;
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 .list-group-item:hover,
@@ -55,6 +95,58 @@
     cursor: pointer;
 }
 
+#toggle-borders:not(:checked) {
+    border: solid 2px;
+}
+
+#toggle-rivers:checked {
+    background-color: #1E90FF;
+}
+
+#toggle-rivers:not(:checked) {
+    border: solid 2px #1E90FF;
+}
+
+#toggle-soil:checked {
+    background-color: #A0522D;
+}
+
+#toggle-soil:not(:checked) {
+    border: solid 2px #A0522D;
+}
+
+#toggle-irrigation:checked {
+    background-color: #0E7490;
+}
+
+#toggle-irrigation:not(:checked) {
+    border: solid 2px #0E7490;
+}
+
+#toggle-roads:checked {
+    background-color: #D22B2B;
+}
+
+#toggle-roads:not(:checked) {
+    border: solid 2px #D22B2B;
+}
+
+#toggle-land-ownership:checked {
+    background-color: #32CD32;
+}
+
+#toggle-land-ownership:not(:checked) {
+    border: solid 2px #32CD32;
+}
+
+#toggle-land-cover:checked {
+    background-color: #8A2BE2; /* BlueViolet */
+}
+
+#toggle-land-cover:not(:checked) {
+    border: solid 2px #8A2BE2;
+}
+
 /* Label Colors */
 #label-borders {
     color: #000000;
@@ -78,6 +170,10 @@
 
 #label-land-ownership {
     color: #32CD32;
+}
+
+#label-land-cover {
+    color: #8A2BE2;
 }
 
 /* Custom Checkbox Styles using icheck-bootstrap */
