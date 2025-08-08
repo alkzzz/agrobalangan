@@ -80,7 +80,7 @@
             const tanahUrl = "{{ asset('geojson/Tanah.json') }}";
             const tutupanLahanUrl = "{{ asset('geojson/tutupan_lahan.json') }}";
 
-            const newLayerUrl = "{{ asset('geojson/kepemilikan_lahan/lahan_bungur_batumandi.geojson') }}";
+            const kepemilikanLahanUrl = "{{ route('kepemilikan-lahan.geojson') }}";
 
             const map = new maplibregl.Map({
                 container: 'map',
@@ -139,8 +139,7 @@
                     this._container = document.createElement('div');
                     this._container.id = 'landcover-legend-on-map';
                     this._container.className = 'map-legend maplibregl-ctrl';
-                    this._container.style.display = 'none'; // Sembunyikan secara default
-                    // Isi HTML legenda sesuai dengan gambar Peta Penutupan Lahan
+                    this._container.style.display = 'none';
                     this._container.innerHTML = `
                 <h6>Legenda Tutupan Lahan</h6>
                 <ul class="list-unstyled">
@@ -202,12 +201,11 @@
                             type: 'fill',
                             source: 'agropolitan',
                             paint: {
-                                'fill-color': '#00FF00',
-                                'fill-opacity': 0.7
+                                'fill-color': '#00EE00',
+                                'fill-opacity': 0.9
                             }
                         });
 
-                        // Layer untuk garis batas poligon
                         map.addLayer({
                             id: 'agropolitan-borders',
                             type: 'line',
@@ -234,12 +232,10 @@
 
                         data.features.forEach((feature, index) => {
                             const {
-                                // desa,
                                 kecamatan
                             } = feature.properties;
                             let coordinates;
 
-                            // Handle both Polygon and MultiPolygon types
                             if (feature.geometry.type === "Polygon") {
                                 coordinates = feature.geometry.coordinates[0][0];
                             } else if (feature.geometry.type === "MultiPolygon") {
@@ -272,18 +268,10 @@
                         map.on('click', 'agropolitan-layer', function(e) {
                             const coordinates = e.lngLat;
                             const properties = e.features[0].properties;
-                            const detailUrl = `/lokasi-agropolitan/details/${properties.id}`;
                             const info = `
-                                <div>
-                                    <strong>Kecamatan:</strong> ${properties.kecamatan}<br>
-                                    <strong>Kls Lereng:</strong> ${properties.kls_lereng || 'N/A'}<br>
-                                    <strong>Irigasi:</strong> ${properties.irigasi || 'N/A'}
-                                    <hr class="my-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-success" style="color: white;">
-                                        <i class="fas fa-search-location mr-1"></i>
-                                        Lihat Detail
-                                    </a>
-                                </div>
+                                <strong>Kecamatan:</strong> ${properties.kecamatan}<br>
+                                <strong>Kls Lereng:</strong> ${properties.kls_lereng || 'N/A'}<br>
+                                <strong>Irigasi:</strong> ${properties.irigasi || 'N/A'}
                             `;
                             popup.setLngLat(coordinates).setHTML(info).addTo(map);
                         });
@@ -371,24 +359,22 @@
                                     'match',
                                     ['get',
                                         'TANAH1'
-                                    ], // Properti yang digunakan untuk mencocokkan
-
-                                    // ===== PALET WARNA BARU =====
-                                    'ROC', '#BDBDBD', // Batuan Permukaan (Abu-abu muda)
+                                    ],
+                                    'ROC', '#BDBDBD',
                                     'Typic Endoaquepts',
-                                    '#8FBC8F', // Tanah Aluvial Rawa (Hijau keabuan)
+                                    '#8FBC8F',
                                     'Typic Eutrudepts',
-                                    '#A0522D', // Tanah Aluvial Subur (Coklat subur)
+                                    '#A0522D',
                                     'Typic Haplosaprists',
-                                    '#594640', // Tanah Gambut/Organik (Coklat sangat gelap)
+                                    '#594640',
                                     'Typic Hapludox',
-                                    '#BC8F8F', // Tanah Tropis Lapuk (Coklat kemerahan)
+                                    '#BC8F8F',
                                     'Typic Hapludults',
-                                    '#F4A460', // Tanah Podsolik Merah-Kuning (Kuning pasir)
-                                    'No Data', '#E0E0E0', // Untuk properti 'No Data'
+                                    '#F4A460',
+                                    'No Data', '#E0E0E0',
                                     '#CCCCCC'
                                 ],
-                                'fill-opacity': 0.8 // Opacity bisa disesuaikan agar terlihat lebih solid
+                                'fill-opacity': 0.5
                             }
                         });
 
@@ -440,11 +426,10 @@
                                     'Pertanian Lahan Kering Campur', '#fee08b',
                                     'Sawah', '#ffffbf',
                                     'Tanah Terbuka', '#964B00',
-                                    '#cccccc' // Warna default jika tidak ada yang cocok
+                                    '#cccccc'
                                 ],
-                                'fill-opacity': 0.7
+                                'fill-opacity': 0.5
                             }
-                            //...
                         });
 
                         map.addLayer({
@@ -462,25 +447,25 @@
                     })
                     .catch(error => console.error('Error loading land cover data:', error));
 
-                fetch(newLayerUrl)
+                fetch(kepemilikanLahanUrl)
                     .then(response => response.json())
                     .then(data => {
-                        // Add new source
-                        map.addSource('new-layer', {
+                        map.addSource('kepemilikan-lahan', {
                             type: 'geojson',
                             data: data
                         });
 
                         map.addLayer({
-                            id: 'new-layer',
+                            id: 'kepemilikan-lahan',
                             type: 'fill',
-                            source: 'new-layer',
+                            source: 'kepemilikan-lahan',
                             layout: {
                                 'visibility': 'none'
                             },
                             paint: {
-                                'fill-color': '#FF0000',
-                                'fill-opacity': 0.5
+                                'fill-color': '#FF8C00',
+                                'fill-outline-color': '#4B2D0A',
+                                'fill-opacity': 0.8
                             }
                         });
                     })
@@ -526,7 +511,6 @@
                     const landCoverCheckbox = document.getElementById('toggle-land-cover');
                     if (landCoverCheckbox.checked) {
                         landCoverCheckbox.checked = false;
-                        // Picu event 'change' secara manual untuk menonaktifkan layer & legenda Tutupan Lahan
                         landCoverCheckbox.dispatchEvent(new Event('change'));
                     }
                 }
@@ -553,7 +537,7 @@
 
             document.getElementById('toggle-land-ownership').addEventListener('change', () => {
                 toggleLayer('toggle-land-ownership', [
-                    'new-layer'
+                    'kepemilikan-lahan'
                 ]);
             });
 

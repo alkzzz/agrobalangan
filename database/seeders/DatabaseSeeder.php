@@ -23,7 +23,11 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(KecamatanSeeder::class);
         $this->call(LokasiAgropolitanSeeder::class);
-
-        // $this->call(PotentialAreaSeeder::class);
+        $this->call(KepemilikanLahanBatumandiSeeder::class);
+        $this->call(KepemilikanLahanHalongSeeder::class);
+        $this->call(KepemilikanLahanLampihongSeeder::class);
+        $this->call(KepemilikanLahanParinginSeeder::class);
+        $this->call(KepemilikanLahanParinginSelatanSeeder::class);
+        $this->call(KepemilikanLahanAwayanSeeder::class);
     }
 }
