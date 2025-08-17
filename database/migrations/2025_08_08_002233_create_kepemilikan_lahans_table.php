@@ -20,6 +20,7 @@ return new class extends Migration
                 ->constrained('lokasi_agropolitan')
                 ->onDelete('cascade');
             $table->string('nama_pemilik');
+            $table->string('keterangan')->nullable();
             $table->geometry('geometri');
             $table->timestamps();
         });

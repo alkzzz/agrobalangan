@@ -26,6 +26,7 @@ class KepemilikanLahan extends Model
      */
     protected $fillable = [
         'nama_pemilik',
+        'keterangan',
         'kecamatan_id',
         'lokasi_agropolitan_id',
         'geometri',
@@ -48,5 +49,10 @@ class KepemilikanLahan extends Model
     public function lokasiAgropolitan()
     {
         return $this->belongsTo(LokasiAgropolitan::class, 'lokasi_agropolitan_id');
+    }
+
+    public function media()
+    {
+        return $this->morphMany(Media::class, 'model')->orderBy('caption');
     }
 }

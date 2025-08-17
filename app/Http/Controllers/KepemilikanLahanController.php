@@ -14,7 +14,7 @@ class KepemilikanLahanController extends Controller
         $features = $kepemilikanLahan->map(function ($lahan) {
             return [
                 'type' => 'Feature',
-                'geometry' => $lahan->geometri, // Otomatis di-cast menjadi GeoJSON oleh paket
+                'geometry' => $lahan->geometri,
                 'properties' => [
                     'id' => $lahan->id,
                     'nama_pemilik' => $lahan->nama_pemilik,
@@ -30,5 +30,23 @@ class KepemilikanLahanController extends Controller
         ];
 
         return response()->json($featureCollection);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $lahan = KepemilikanLahan::findOrFail($id);
+        $lahan->update($request->only(['nama_pemilik', 'keterangan']));
+
+        return redirect()->route('lokasi-agropolitan.detail', $lahan->lokasi_agropolitan_id)
+            ->with('success', 'Data kepemilikan lahan berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $lahan = KepemilikanLahan::findOrFail($id);
+        $lahan->delete();
+
+        return redirect()->route('lokasi-agropolitan.detail', $lahan->lokasi_agropolitan_id)
+            ->with('success', 'Data kepemilikan lahan berhasil dihapus.');
     }
 }

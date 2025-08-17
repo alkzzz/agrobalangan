@@ -30,8 +30,23 @@ class LokasiAgropolitan extends Model
         return $this->belongsTo(Kecamatan::class);
     }
 
-    public function analisis()
+    public function analisisTanah()
     {
-        return $this->hasOne(AnalisisLokasi::class);
+        return $this->hasOne(AnalisisTanah::class);
+    }
+
+    public function kepemilikanLahan()
+    {
+        return $this->hasMany(KepemilikanLahan::class, 'lokasi_agropolitan_id');
+    }
+
+    public function media()
+    {
+        return $this->morphMany(\App\Models\Media::class, 'model');
+    }
+
+    public function kepemilikanMedia()
+    {
+        return $this->media();
     }
 }

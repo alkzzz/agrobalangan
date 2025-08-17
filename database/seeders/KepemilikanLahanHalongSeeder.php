@@ -381,10 +381,15 @@ JSON;
             $properties = $feature->properties;
             $geometryData = $feature->geometry;
 
-            // Lewati jika tidak ada data geometri atau nama pemilik kosong
-            if (empty($geometryData) || empty($geometryData->coordinates) || trim($properties->Name) === '') {
-                $this->command->warn('Melewatkan data tanpa geometri atau nama pemilik.');
+            if (empty($geometryData) || empty($geometryData->coordinates)) {
+                $this->command->warn('Melewatkan data tanpa geometri.');
                 continue;
+            }
+
+            // Siapkan nama pemilik, gunakan "No Data" jika kosong
+            $namaPemilik = trim($properties->Name ?? '');
+            if (empty($namaPemilik)) {
+                $namaPemilik = 'No Data';
             }
 
             $polygons = [];
@@ -419,7 +424,7 @@ JSON;
             $multiPolygon = new MultiPolygon($polygons);
 
             KepemilikanLahan::create([
-                'nama_pemilik'          => trim($properties->Name),
+                'nama_pemilik'          => $namaPemilik,
                 'kecamatan_id'          => $kecamatanId,
                 'lokasi_agropolitan_id' => $lokasiAgropolitanId,
                 'geometri'              => $multiPolygon,

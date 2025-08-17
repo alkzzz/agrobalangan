@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AnalisisTanah;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,6 +22,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@agrobalangan.com',
             'password' => bcrypt(12345678)
         ]);
+
+        User::factory()->create([
+            'name' => 'DKPPP Kabupaten Balangan',
+            'username' => 'dkppp',
+            'email' => 'dkppp@agrobalangan.com',
+            'password' => bcrypt('balangan')
+        ]);
+
         $this->call(KecamatanSeeder::class);
         $this->call(LokasiAgropolitanSeeder::class);
         $this->call(KepemilikanLahanBatumandiSeeder::class);
@@ -29,5 +38,6 @@ class DatabaseSeeder extends Seeder
         $this->call(KepemilikanLahanParinginSeeder::class);
         $this->call(KepemilikanLahanParinginSelatanSeeder::class);
         $this->call(KepemilikanLahanAwayanSeeder::class);
+        $this->call(AnalisisTanahSeeder::class);
     }
 }

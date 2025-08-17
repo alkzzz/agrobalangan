@@ -237,7 +237,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const agropolitanUrl = "{{ route('lokasi-agropolitan.geojson') }}";
-            const batasKecamatan = "{{ asset('geojson/batas_kecamatan.geojson') }}";
+            const batasKecamatan = "{{ asset('geojson/batas_kecamatan_balangan.geojson') }}";
             const sungaiUrl = "{{ asset('geojson/Sungai.json') }}";
             const tanahUrl = "{{ asset('geojson/Tanah.json') }}";
             const tutupanLahanUrl = "{{ asset('geojson/tutupan_lahan.json') }}";
@@ -248,6 +248,7 @@
                 container: 'map',
                 style: {
                     "version": 8,
+                    "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
                     "sources": {
                         "osm": {
                             "type": "raster",
@@ -451,6 +452,7 @@
                     .then(data => {
                         map.addSource('administrasi', {
                             type: 'geojson',
+                            promoteId: 'NAME_3',
                             data
                         });
 
@@ -470,7 +472,25 @@
                             source: 'administrasi',
                             paint: {
                                 'line-color': '#000000',
-                                'line-width': 0.7
+                                'line-width': 1
+                            }
+                        });
+
+                        map.addLayer({
+                            id: 'administrasi-labels',
+                            type: 'symbol',
+                            source: 'administrasi',
+                            layout: {
+                                'text-field': ['get',
+                                    'NAME_3'
+                                ],
+                                'text-size': 16,
+                                'text-allow-overlap': false
+                            },
+                            paint: {
+                                'text-color': '#000000',
+                                'text-halo-color': '#FFFFFF',
+                                'text-halo-width': 1,
                             }
                         });
                     })
@@ -568,7 +588,7 @@
                             type: 'fill',
                             source: 'landcover',
                             layout: {
-                                'visibility': 'none' // Sembunyikan secara default
+                                'visibility': 'none'
                             },
                             // ...
                             paint: {
@@ -652,7 +672,9 @@
             };
 
             document.getElementById('toggle-borders').addEventListener('change', () => {
-                toggleLayer('toggle-borders', ['administrasi-layer', 'administrasi-borders']);
+                toggleLayer('toggle-borders', ['administrasi-layer', 'administrasi-borders',
+                    'administrasi-labels'
+                ]);
             });
 
             document.getElementById('toggle-rivers').addEventListener('change', () => {

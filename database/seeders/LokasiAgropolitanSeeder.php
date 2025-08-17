@@ -16,7 +16,7 @@ class LokasiAgropolitanSeeder extends Seeder
     public function run(): void
     {
         LokasiAgropolitan::query()->delete();
-        $jsonPath = public_path('geojson/Agro_balangan_kec.geojson');
+        $jsonPath = public_path('geojson/agropolitan_balangan.geojson');
 
         if (!File::exists($jsonPath)) {
             $this->command->error("File GeoJSON tidak ditemukan di: " . $jsonPath);

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use MatanYadaev\EloquentSpatial\Objects\MultiLineString;
+use MatanYadaev\EloquentSpatial\Objects\MultiPolygon;
 use MatanYadaev\EloquentSpatial\Traits\HasSpatial;
 
 class Kecamatan extends Model
@@ -19,6 +19,6 @@ class Kecamatan extends Model
     ];
 
     protected $casts = [
-        'batas_wilayah' => MultiLineString::class,
+        'batas_wilayah' => MultiPolygon::class,
     ];
 }
