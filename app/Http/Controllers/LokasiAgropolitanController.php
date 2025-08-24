@@ -47,7 +47,7 @@ class LokasiAgropolitanController extends Controller
 
     public function detail($id)
     {
-        $lokasi = LokasiAgropolitan::with(['kecamatan', 'kepemilikanLahan', 'analisisTanah'])->findOrFail($id);
+        $lokasi = LokasiAgropolitan::with(['kecamatan', 'kepemilikanLahan', 'analisisTanah', 'saluranIrigasi'])->findOrFail($id);
 
         $feature = [
             'type' => 'Feature',
@@ -64,13 +64,12 @@ class LokasiAgropolitanController extends Controller
             'features' => [$feature]
         ];
 
-        // FeatureCollection untuk kepemilikan
         $kepemilikanFeatures = $lokasi->kepemilikanLahan->map(function ($k) {
             return [
                 'type' => 'Feature',
                 'geometry' => $k->geometri?->toArray(),
                 'properties' => [
-                    'id'          => $k->id,
+                    'id'           => $k->id,
                     'nama_pemilik' => $k->nama_pemilik,
                 ],
             ];
@@ -81,21 +80,41 @@ class LokasiAgropolitanController extends Controller
             'features' => $kepemilikanFeatures,
         ];
 
-        // data kepemilikan
         $kepemilikanList = $lokasi->kepemilikanLahan->map(fn($k) => [
             'id' => $k->id,
             'nama_pemilik' => $k->nama_pemilik,
             'keterangan' => $k->keterangan,
         ])->values();
 
+        $saluranFeatures = $lokasi->saluranIrigasi->map(function ($saluran) {
+            return [
+                'type' => 'Feature',
+                'geometry' => $saluran->geometri->toArray(),
+                'properties' => [
+                    'id' => $saluran->id,
+                    'desa' => $saluran->desa,
+                    'kondisi' => $saluran->kondisi,
+                    'masalah' => $saluran->masalah,
+                ],
+            ];
+        })->values()->all();
+
+        $saluranGeoJson = [
+            'type' => 'FeatureCollection',
+            'features' => $saluranFeatures,
+        ];
+
         return view('lokasi_agropolitan.detail', [
             'lokasi'             => $lokasi,
             'geoJsonData'        => $geoJsonData,
             'kepemilikanGeoJson' => $kepemilikanGeoJson,
             'kepemilikanList'    => $kepemilikanList,
-            'analisisTanah'      => $lokasi->analisisTanah
+            'analisisTanah'      => $lokasi->analisisTanah,
+            'saluranList'        => $lokasi->saluranIrigasi,
+            'saluranGeoJson'     => $saluranGeoJson,
         ]);
     }
+
 
     public function showKepemilikanDokumentasi(LokasiAgropolitan $lokasi)
     {

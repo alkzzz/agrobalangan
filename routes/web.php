@@ -43,4 +43,5 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::put('/analisis-tanah/update/{analisis_tanah}', [AnalisisTanahController::class, 'update'])->name('analisis-tanah.update');
+    Route::put('/saluran-irigasi/update/{saluran_irigasi}', [SaluranIrigasiController::class, 'update'])->name('saluran-irigasi.update');
 });

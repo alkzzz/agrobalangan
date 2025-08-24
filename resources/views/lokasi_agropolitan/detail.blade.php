@@ -231,479 +231,728 @@
 
                         {{-- Tab Pane untuk Irigasi --}}
                         <div class="tab-pane fade" id="tab-irigasi" role="tabpanel" aria-labelledby="tab-irigasi-link">
-                            {{-- Link Dokumentasi --}}
                             <a href="{{ route('lokasi.dokumentasi.irigasi', $lokasi->id) }}" target="_blank"
                                 class="btn btn-outline-success float-right">
                                 <i class="fas fa-images mr-1"></i> Lihat Dokumentasi
                             </a>
                             <h4>Data Jaringan Irigasi</h4>
-                            <p>Informasi mengenai saluran irigasi primer, sekunder, dan tersier yang ada.</p>
-                            {{-- TODO: Tampilkan data irigasi di sini --}}
-                            <table class="table table-bordered">
-                                {{-- ... tabel data irigasi ... --}}
-                            </table>
-                        </div>
-
-                        {{-- Tab Pane untuk Transportasi --}}
-                        <div class="tab-pane fade" id="tab-jalan" role="tabpanel" aria-labelledby="tab-jalan-link">
-                            {{-- Link Dokumentasi --}}
-                            <a href="{{ route('lokasi.dokumentasi.jalan', $lokasi->id) }}" target="_blank"
-                                class="btn btn-outline-success float-right">
-                                <i class="fas fa-images mr-1"></i> Lihat Dokumentasi
-                            </a>
-                            <h4>Data Infrastruktur Jalan</h4>
-                            <p>Daftar jalan usaha tani, jalan produksi, dan akses jalan utama ke lokasi.</p>
-                            {{-- TODO: Tampilkan data transportasi di sini --}}
-                            <table class="table table-bordered">
-                                {{-- ... tabel data transportasi ... --}}
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Modal Edit Kepemilikan --}}
-                <div class="modal fade" id="modalEditKepemilikan" tabindex="-1" role="dialog"
-                    aria-labelledby="modalEditTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-md" role="document">
-                        <form id="formEditKepemilikan" method="POST" action="#">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="modalEditTitle"><i
-                                            class="fas fa-user-check mr-2"></i>Edit Kepemilikan Lahan</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
-                                    </button>
+                            <div class="card card-outline card-info mt-4">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-water mr-1"></i> Data Saluran Eksisting</h3>
                                 </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="table-saluran" class="table table-bordered table-striped"
+                                            style="width: 100%;">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Desa</th>
+                                                    <th>Hirarki</th>
+                                                    <th>Tipe</th>
+                                                    <th>Dimensi (P×L×D)</th>
+                                                    <th>Kondisi</th>
+                                                    <th>Masalah</th>
+                                                    <th>Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse ($saluranList as $i => $saluran)
+                                                    <tr>
+                                                        <td>{{ $i + 1 }}</td>
+                                                        <td>{{ $saluran->desa }}</td>
+                                                        <td>{{ $saluran->hirarki }}</td>
+                                                        <td>{{ $saluran->tipe_saluran }}</td>
+                                                        <td>{{ $saluran->panjang_m }}m × {{ $saluran->lebar_m }}m ×
+                                                            {{ $saluran->kedalaman_m }}m</td>
+                                                        <td>{{ $saluran->kondisi }}</td>
+                                                        <td>{{ $saluran->masalah ?? '-' }}</td>
 
-                                <div class="modal-body">
-
-                                    <div class="form-group">
-                                        <label for="inpNamaPemilik">Nama Pemilik <span
-                                                class="text-danger">*</span></label>
-                                        <input type="text" name="nama_pemilik" id="inpNamaPemilik"
-                                            class="form-control" required>
+                                                        <td class="text-nowrap">
+                                                            <button type="button" class="btn btn-sm btn-primary"
+                                                                onclick="zoomToSaluran({{ $saluran->id }})">
+                                                                <i class="fas fa-fw fa-map-pin"></i> Zoom ke Lokasi
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-warning btn-edit-saluran"
+                                                                data-saluran='{{ json_encode($saluran) }}'
+                                                                data-update-url="{{ route('saluran-irigasi.update', $saluran->id) }}">
+                                                                <i class="fas fa-fw fa-edit"></i> Edit
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="8" class="text-center">Tidak ada data saluran
+                                                            irigasi.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <div class="form-group mb-0">
-                                        <label for="inpKeterangan">Keterangan</label>
-                                        <textarea name="keterangan" id="inpKeterangan" class="form-control" rows="3"></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i
-                                            class="fas fa-ban mr-1"></i> Batal</button>
-                                    <button type="submit" class="btn btn-success"><i class="fas fa-save mr-1"></i>Simpan
-                                        Perubahan</button>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
 
-                <div class="modal fade" id="modalEditAnalisisTanah" tabindex="-1" role="dialog"
-                    aria-labelledby="modalEditAnalisisTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <form id="formEditAnalisisTanah" method="POST" action="#">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="modalEditAnalisisTitle"><i
-                                            class="fas fa-vial mr-2"></i>Edit Data Analisis Tanah</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-4 form-group">
-                                            <label for="tekstur">Tekstur</label>
-                                            <input type="text" name="tekstur" class="form-control">
-                                        </div>
-                                        <div class="col-md-4 form-group">
-                                            <label for="ph">pH</label>
-                                            <input type="number" step="0.01" name="ph" class="form-control">
-                                        </div>
-                                        <div class="col-md-4 form-group">
-                                            <label for="c_organik">C-Organik (%)</label>
-                                            <input type="number" step="0.01" name="c_organik" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 form-group">
-                                            <label for="n_total">N-Total (%)</label>
-                                            <input type="number" step="0.01" name="n_total" class="form-control">
-                                        </div>
-                                        <div class="col-md-4 form-group">
-                                            <label for="p_potensial">P-Potensial (Mg/100g)</label>
-                                            <input type="number" step="0.01" name="p_potensial"
-                                                class="form-control">
-                                        </div>
-                                        <div class="col-md-4 form-group">
-                                            <label for="k_potensial">K-Potensial (Mg/100g)</label>
-                                            <input type="number" step="0.01" name="k_potensial"
-                                                class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 form-group">
-                                            <label for="ktk">KTK (Cmol(+)/kg)</label>
-                                            <input type="number" step="0.01" name="ktk" class="form-control">
-                                        </div>
-                                        <div class="col-md-6 form-group">
-                                            <label for="kejenuhan_basa">Kejenuhan Basa (%)</label>
-                                            <input type="number" step="0.01" name="kejenuhan_basa"
-                                                class="form-control">
-                                        </div>
-                                    </div>
-                                    <hr>
-                                    <h5>Kesesuaian Lahan</h5>
-                                    <div class="row">
-                                        <div class="col-md-6 form-group">
-                                            <label for="kesesuaian_aktual">Kesesuaian Aktual</label>
-                                            <input type="text" name="kesesuaian_aktual" class="form-control">
-                                        </div>
-                                        <div class="col-md-6 form-group">
-                                            <label for="kesesuaian_potensial">Kesesuaian Potensial</label>
-                                            <input type="text" name="kesesuaian_potensial" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="faktor_pembatas">Faktor Pembatas</label>
-                                        <textarea name="faktor_pembatas" class="form-control" rows="3"></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i
-                                            class="fas fa-ban mr-1"></i>Batal</button>
-                                    <button type="submit" class="btn btn-success"><i class="fas fa-save mr-1"></i>
-                                        Simpan Perubahan</button>
-                                </div>
+                            {{-- Tab Pane untuk Transportasi --}}
+                            <div class="tab-pane fade" id="tab-jalan" role="tabpanel" aria-labelledby="tab-jalan-link">
+                                {{-- Link Dokumentasi --}}
+                                <a href="{{ route('lokasi.dokumentasi.jalan', $lokasi->id) }}" target="_blank"
+                                    class="btn btn-outline-success float-right">
+                                    <i class="fas fa-images mr-1"></i> Lihat Dokumentasi
+                                </a>
+                                <h4>Data Infrastruktur Jalan</h4>
+                                <p>Daftar jalan usaha tani, jalan produksi, dan akses jalan utama ke lokasi.</p>
+                                {{-- TODO: Tampilkan data transportasi di sini --}}
+                                <table class="table table-bordered">
+                                    {{-- ... tabel data transportasi ... --}}
+                                </table>
                             </div>
-                        </form>
+                        </div>
+                    </div>
+
+                    {{-- Modal Edit Kepemilikan --}}
+                    <div class="modal fade" id="modalEditKepemilikan" tabindex="-1" role="dialog"
+                        aria-labelledby="modalEditTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-md" role="document">
+                            <form id="formEditKepemilikan" method="POST" action="#">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalEditTitle"><i
+                                                class="fas fa-user-check mr-2"></i>Edit Kepemilikan Lahan</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body">
+
+                                        <div class="form-group">
+                                            <label for="inpNamaPemilik">Nama Pemilik <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" name="nama_pemilik" id="inpNamaPemilik"
+                                                class="form-control" required>
+                                        </div>
+
+                                        <div class="form-group mb-0">
+                                            <label for="inpKeterangan">Keterangan</label>
+                                            <textarea name="keterangan" id="inpKeterangan" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i
+                                                class="fas fa-ban mr-1"></i> Batal</button>
+                                        <button type="submit" class="btn btn-success"><i
+                                                class="fas fa-save mr-1"></i>Simpan
+                                            Perubahan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="modalEditAnalisisTanah" tabindex="-1" role="dialog"
+                        aria-labelledby="modalEditAnalisisTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <form id="formEditAnalisisTanah" method="POST" action="#">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalEditAnalisisTitle"><i
+                                                class="fas fa-vial mr-2"></i>Edit Data Analisis Tanah</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-4 form-group">
+                                                <label for="tekstur">Tekstur</label>
+                                                <input type="text" name="tekstur" class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label for="ph">pH</label>
+                                                <input type="number" step="0.01" name="ph"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label for="c_organik">C-Organik (%)</label>
+                                                <input type="number" step="0.01" name="c_organik"
+                                                    class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 form-group">
+                                                <label for="n_total">N-Total (%)</label>
+                                                <input type="number" step="0.01" name="n_total"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label for="p_potensial">P-Potensial (Mg/100g)</label>
+                                                <input type="number" step="0.01" name="p_potensial"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label for="k_potensial">K-Potensial (Mg/100g)</label>
+                                                <input type="number" step="0.01" name="k_potensial"
+                                                    class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label for="ktk">KTK (Cmol(+)/kg)</label>
+                                                <input type="number" step="0.01" name="ktk"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label for="kejenuhan_basa">Kejenuhan Basa (%)</label>
+                                                <input type="number" step="0.01" name="kejenuhan_basa"
+                                                    class="form-control">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <h5>Kesesuaian Lahan</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label for="kesesuaian_aktual">Kesesuaian Aktual</label>
+                                                <input type="text" name="kesesuaian_aktual" class="form-control">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label for="kesesuaian_potensial">Kesesuaian Potensial</label>
+                                                <input type="text" name="kesesuaian_potensial" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="faktor_pembatas">Faktor Pembatas</label>
+                                            <textarea name="faktor_pembatas" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i
+                                                class="fas fa-ban mr-1"></i>Batal</button>
+                                        <button type="submit" class="btn btn-success"><i class="fas fa-save mr-1"></i>
+                                            Simpan Perubahan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {{-- Modal Edit Saluran Irigasi --}}
+                    <div class="modal fade" id="modalEditSaluran" tabindex="-1" role="dialog"
+                        aria-labelledby="modalEditSaluranTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <form id="formEditSaluran" method="POST" action="#">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalEditSaluranTitle"><i
+                                                class="fas fa-tint mr-2"></i>Edit Data Saluran Irigasi</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label>Desa</label>
+                                                <input type="text" name="desa" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Hirarki Saluran</label>
+                                                <input type="text" name="hirarki" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label>Tipe Saluran</label>
+                                                <input type="text" name="tipe_saluran" class="form-control">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Kondisi</label>
+                                                <input type="text" name="kondisi" class="form-control">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <h5>Dimensi Saluran (meter)</h5>
+                                        <div class="row">
+                                            <div class="col-md-4 form-group">
+                                                <label>Panjang (m)</label>
+                                                <input type="number" step="0.01" name="panjang_m"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label>Lebar (m)</label>
+                                                <input type="number" step="0.01" name="lebar_m"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label>Kedalaman (m)</label>
+                                                <input type="number" step="0.01" name="kedalaman_m"
+                                                    class="form-control">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="form-group">
+                                            <label>Masalah yang Ditemukan</label>
+                                            <textarea name="masalah" class="form-control" rows="3"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Link Dokumentasi</label>
+                                            <input type="url" name="link_dokumentasi" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-success"><i
+                                                class="fas fa-save mr-1"></i>Simpan Perubahan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-@stop
+    @stop
 
-@section('js')
-    <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        const lokasiGeoJson = {!! json_encode($geoJsonData) !!};
-        const parcelGeoJson = {!! json_encode($kepemilikanGeoJson) !!};
+    @section('js')
+        <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            const lokasiGeoJson = {!! json_encode($geoJsonData) !!};
+            const parcelGeoJson = {!! json_encode($kepemilikanGeoJson) !!};
+            const saluranGeoJson = {!! json_encode($saluranGeoJson) !!};
 
-        const map = new maplibregl.Map({
-            container: 'map',
-            style: {
-                version: 8,
-                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-                sources: {
-                    osm: {
+            let activePopup = null;
+
+            const map = new maplibregl.Map({
+                container: 'map',
+                style: {
+                    version: 8,
+                    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                    sources: {
+                        osm: {
+                            type: 'raster',
+                            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                            tileSize: 256
+                        }
+                    },
+                    layers: [{
+                        id: 'osm-tiles',
                         type: 'raster',
-                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                        tileSize: 256
-                    }
+                        source: 'osm'
+                    }]
                 },
-                layers: [{
-                    id: 'osm-tiles',
-                    type: 'raster',
-                    source: 'osm'
-                }]
-            },
-            center: [115.497, -2.308],
-            zoom: 10
-        });
+                center: [115.497, -2.308],
+                zoom: 10
+            });
 
-        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+            map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-        function fitMapToBounds(map, geometry) {
-            const bounds = new maplibregl.LngLatBounds();
-            const processCoordinates = (coords) => {
-                if (Array.isArray(coords) && coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                    bounds.extend(coords);
+            function fitMapToBounds(map, geometry) {
+                const bounds = new maplibregl.LngLatBounds();
+                const processCoordinates = (coords) => {
+                    if (Array.isArray(coords) && coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                        bounds.extend(coords);
+                    }
+                };
+
+                if (geometry.type === 'Polygon') {
+                    geometry.coordinates[0].forEach(processCoordinates);
+                } else if (geometry.type === 'MultiPolygon') {
+                    geometry.coordinates.forEach(polygon => {
+                        polygon[0].forEach(processCoordinates);
+                    });
                 }
-            };
 
-            if (geometry.type === 'Polygon') {
-                geometry.coordinates[0].forEach(processCoordinates);
-            } else if (geometry.type === 'MultiPolygon') {
-                geometry.coordinates.forEach(polygon => {
-                    polygon[0].forEach(processCoordinates);
-                });
-            }
-
-            if (!bounds.isEmpty()) {
-                map.fitBounds(bounds, {
-                    padding: 50,
-                    duration: 1000
-                });
-            }
-        }
-
-        function toggleParcelLayers(visible) {
-            if (!map.getLayer('persil-fill')) {
-                return;
-            }
-            const visibility = visible ? 'visible' : 'none';
-            map.setLayoutProperty('persil-fill', 'visibility', visibility);
-            map.setLayoutProperty('persil-line', 'visibility', visibility);
-            map.setLayoutProperty('persil-label', 'visibility', visibility);
-        }
-
-        map.on('load', () => {
-            if (lokasiGeoJson && lokasiGeoJson.features && lokasiGeoJson.features.length > 0 && lokasiGeoJson
-                .features[0].geometry) {
-
-                map.addSource('lokasi-agropolitan', {
-                    'type': 'geojson',
-                    'data': lokasiGeoJson
-                });
-                map.addLayer({
-                    id: 'agropolitan-layer',
-                    type: 'fill',
-                    source: 'lokasi-agropolitan',
-                    paint: {
-                        'fill-color': '#00EE00',
-                        'fill-opacity': 0.9
-                    }
-                });
-                map.addLayer({
-                    id: 'agropolitan-borders',
-                    type: 'line',
-                    source: 'lokasi-agropolitan',
-                    paint: {
-                        'line-color': '#FFD700',
-                        'line-width': 2,
-                        'line-opacity': 0.9
-                    }
-                });
-                map.addLayer({
-                    id: 'agropolitan-border-casing',
-                    type: 'line',
-                    source: 'lokasi-agropolitan',
-                    paint: {
-                        'line-color': '#000000',
-                        'line-width': 3,
-                        'line-opacity': 0.7
-                    }
-                });
-
-                fitMapToBounds(map, lokasiGeoJson.features[0].geometry);
-
-                if (parcelGeoJson && parcelGeoJson.features && parcelGeoJson.features.length) {
-                    map.addSource('persil', {
-                        type: 'geojson',
-                        data: parcelGeoJson
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds, {
+                        padding: 50,
+                        duration: 1000
                     });
+                }
+            }
 
+            function createOrUpdatePopup(coordinates, htmlContent) {
+                if (activePopup) {
+                    activePopup.remove();
+                }
+
+                activePopup = new maplibregl.Popup({
+                        closeButton: true,
+                        closeOnClick: false
+                    })
+                    .setLngLat(coordinates)
+                    .setHTML(htmlContent)
+                    .addTo(map);
+            }
+
+            function toggleParcelLayers(visible) {
+                if (!map.getLayer('persil-fill')) {
+                    return;
+                }
+                const visibility = visible ? 'visible' : 'none';
+                map.setLayoutProperty('persil-fill', 'visibility', visibility);
+                map.setLayoutProperty('persil-line', 'visibility', visibility);
+                map.setLayoutProperty('persil-label', 'visibility', visibility);
+            }
+
+            function toggleSaluranLayers(visible) {
+                if (!map.getLayer('saluran-points')) {
+                    return;
+                }
+                const visibility = visible ? 'visible' : 'none';
+                map.setLayoutProperty('saluran-points', 'visibility', visibility);
+            }
+
+            map.on('load', () => {
+
+                if (lokasiGeoJson && lokasiGeoJson.features && lokasiGeoJson.features.length > 0 && lokasiGeoJson
+                    .features[0].geometry) {
+
+                    map.addSource('lokasi-agropolitan', {
+                        'type': 'geojson',
+                        'data': lokasiGeoJson
+                    });
                     map.addLayer({
-                        id: 'persil-fill',
+                        id: 'agropolitan-layer',
                         type: 'fill',
-                        source: 'persil',
+                        source: 'lokasi-agropolitan',
                         paint: {
-                            'fill-color': '#FF8C00',
-                            'fill-opacity': 0.8
+                            'fill-color': '#00EE00',
+                            'fill-opacity': 0.9
                         }
                     });
                     map.addLayer({
-                        id: 'persil-line',
+                        id: 'agropolitan-borders',
                         type: 'line',
-                        source: 'persil',
+                        source: 'lokasi-agropolitan',
                         paint: {
-                            'line-color': '#4B2D0A',
-                            'line-width': 1.5
+                            'line-color': '#FFD700',
+                            'line-width': 2,
+                            'line-opacity': 0.9
                         }
                     });
                     map.addLayer({
-                        id: 'persil-label',
-                        type: 'symbol',
-                        source: 'persil',
-                        layout: {
-                            'text-field': ['get', 'nama_pemilik'],
-                            'text-size': 12
-                        },
+                        id: 'agropolitan-border-casing',
+                        type: 'line',
+                        source: 'lokasi-agropolitan',
                         paint: {
-                            'text-halo-width': 1,
-                            'text-halo-color': '#ffffff'
+                            'line-color': '#000000',
+                            'line-width': 3,
+                            'line-opacity': 0.7
                         }
                     });
 
-                    toggleParcelLayers(false);
+                    fitMapToBounds(map, lokasiGeoJson.features[0].geometry);
 
-                    map.on('click', 'persil-fill', (e) => {
-                        const p = e.features[0].properties;
+                    if (parcelGeoJson && parcelGeoJson.features && parcelGeoJson.features.length) {
+                        map.addSource('persil', {
+                            type: 'geojson',
+                            data: parcelGeoJson
+                        });
+
+                        map.addLayer({
+                            id: 'persil-fill',
+                            type: 'fill',
+                            source: 'persil',
+                            paint: {
+                                'fill-color': '#FF8C00',
+                                'fill-opacity': 0.8
+                            }
+                        });
+                        map.addLayer({
+                            id: 'persil-line',
+                            type: 'line',
+                            source: 'persil',
+                            paint: {
+                                'line-color': '#4B2D0A',
+                                'line-width': 1.5
+                            }
+                        });
+                        map.addLayer({
+                            id: 'persil-label',
+                            type: 'symbol',
+                            source: 'persil',
+                            layout: {
+                                'text-field': ['get', 'nama_pemilik'],
+                                'text-size': 12
+                            },
+                            paint: {
+                                'text-halo-width': 1,
+                                'text-halo-color': '#ffffff'
+                            }
+                        });
+
+                        toggleParcelLayers(false);
+
+                        map.on('click', 'persil-fill', (e) => {
+                            const p = e.features[0].properties;
+                            new maplibregl.Popup()
+                                .setLngLat(e.lngLat)
+                                .setHTML(`<strong>${p.nama_pemilik}</strong><br>ID: ${p.id}`)
+                                .addTo(map);
+                        });
+                        map.on('mouseenter', 'persil-fill', () => map.getCanvas().style.cursor = 'pointer');
+                        map.on('mouseleave', 'persil-fill', () => map.getCanvas().style.cursor = '');
+                    }
+                } else {
+                    document.getElementById('map').innerHTML =
+                        '<div class="alert alert-danger m-3">Data Peta untuk lokasi ini tidak ditemukan.</div>';
+                }
+
+                if (saluranGeoJson && saluranGeoJson.features.length > 0) {
+                    map.addSource('saluran-irigasi', {
+                        'type': 'geojson',
+                        'data': saluranGeoJson
+                    });
+
+                    map.addLayer({
+                        id: 'saluran-points',
+                        type: 'circle',
+                        source: 'saluran-irigasi',
+                        paint: {
+                            'circle-radius': 7,
+                            'circle-color': '#17a2b8',
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        },
+                        layout: {
+                            'visibility': 'none'
+                        }
+                    });
+
+                    map.on('click', 'saluran-points', (e) => {
+                        const properties = e.features[0].properties;
+                        const coordinates = e.features[0].geometry.coordinates.slice();
+
                         new maplibregl.Popup()
-                            .setLngLat(e.lngLat)
-                            .setHTML(`<strong>${p.nama_pemilik}</strong><br>ID: ${p.id}`)
+                            .setLngLat(coordinates)
+                            .setHTML(
+                                `<strong>Desa: ${properties.desa}</strong><br>Kondisi: ${properties.kondisi}`)
                             .addTo(map);
                     });
-                    map.on('mouseenter', 'persil-fill', () => map.getCanvas().style.cursor = 'pointer');
-                    map.on('mouseleave', 'persil-fill', () => map.getCanvas().style.cursor = '');
+
+                    map.on('mouseenter', 'saluran-points', () => {
+                        map.getCanvas().style.cursor = 'pointer';
+                    });
+                    map.on('mouseleave', 'saluran-points', () => {
+                        map.getCanvas().style.cursor = '';
+                    });
+
+                    toggleSaluranLayers(false);
                 }
-            } else {
-                document.getElementById('map').innerHTML =
-                    '<div class="alert alert-danger m-3">Data Peta untuk lokasi ini tidak ditemukan.</div>';
-            }
-        });
-
-        window.zoomToParcel = function(id) {
-            if (!parcelGeoJson || !parcelGeoJson.features) return;
-            const feature = parcelGeoJson.features.find(f => Number(f.properties.id) === Number(id));
-            if (!feature) return;
-
-            toggleParcelLayers(true);
-            $('#tab-kepemilikan-link').tab('show');
-            fitMapToBounds(map, feature.geometry);
-
-            document.getElementById('map').scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
             });
-        };
-    </script>
-    <script>
-        $(function() {
-            const commonOpts = {
-                responsive: true,
-                autoWidth: false,
-                language: {
-                    url: '{{ asset('js/id.json') }}'
-                }
+
+            window.zoomToParcel = function(id) {
+                if (!parcelGeoJson || !parcelGeoJson.features) return;
+                const feature = parcelGeoJson.features.find(f => Number(f.properties.id) === Number(id));
+                if (!feature) return;
+
+                toggleParcelLayers(true);
+                $('#tab-kepemilikan-link').tab('show');
+                fitMapToBounds(map, feature.geometry);
+
+                document.getElementById('map').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
             };
 
-            const tableOptsWithButtons = {
-                ...commonOpts,
-                lengthChange: true,
-                ordering: false,
-                dom: 'Bfrtip',
-                buttons: [
-                    'copy',
-                    {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':visible:not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'csv',
-                        exportOptions: {
-                            columns: ':visible:not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':visible:not(:last-child)',
-                        },
-                        customize: function(doc) {
-                            doc.content[1].table.widths =
-                                Array(doc.content[1].table.body[0].length + 1).join('*').split('');
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':visible:not(:last-child)'
-                        }
-                    },
-                    'colvis'
-                ]
+            window.zoomToSaluran = function(id) {
+                toggleSaluranLayers(true);
+                $('#tab-irigasi-link').tab('show');
+
+                const feature = saluranGeoJson.features.find(f => Number(f.properties.id) === Number(id));
+
+                map.flyTo({
+                    center: feature.geometry.coordinates,
+                    zoom: 17,
+                    essential: true
+                });
+
+                const popupHtml =
+                    `<strong>Desa: ${feature.properties.desa}</strong><br>Kondisi: ${feature.properties.kondisi}`;
+                createOrUpdatePopup(feature.geometry.coordinates, popupHtml);
+
+                document.getElementById('map').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
             };
-
-            $('#table-kepemilikan, #table-tanah, #table-irigasi, #table-transportasi').DataTable(
-                tableOptsWithButtons);
-
-            $('a[data-toggle="pill"]').on('shown.bs.tab', function(event) {
-                const activeTabId = $(event.target).attr('id');
-
-                if (activeTabId === 'tab-kepemilikan-link') {
-                    toggleParcelLayers(true);
-                } else {
-                    toggleParcelLayers(false);
-                }
-                map.resize();
-            });
-        });
-    </script>
-    <script>
-        $(function() {
-            const updateUrlTemplate = "{{ route('kepemilikan-lahan.update', ':id') }}";
-
-            $(document).on('click', '.btn-edit-kepemilikan', function() {
-                const id = $(this).data('id');
-                const nama = $(this).data('nama');
-                const ket = $(this).data('keterangan');
-
-                $('#formEditKepemilikan').attr('action', updateUrlTemplate.replace(':id', id));
-                $('#formEditKepemilikan [name="nama_pemilik"]').val(nama);
-                $('#formEditKepemilikan [name="keterangan"]').val(ket);
-
-                $('#modalEditKepemilikan').modal('show');
-            });
-
-            $('#modalEditKepemilikan').on('shown.bs.modal', function() {
-                $(this).find('input[name="nama_pemilik"]').trigger('focus');
-            });
-
-            $(document).on('submit', '.form-delete', function(e) {
-                e.preventDefault();
-                const form = this;
-
-                Swal.fire({
-                    title: 'Konfirmasi Penghapusan Data',
-                    text: "Apakah Anda yakin ingin menghapus data ini? Data yang telah dihapus tidak dapat dikembalikan.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="fas fa-trash mr-1"></i> Hapus Data',
-                    cancelButtonText: '<i class="fas fa-ban mr-1"></i> Batalkan'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
+        </script>
+        <script>
+            $(function() {
+                const commonOpts = {
+                    responsive: true,
+                    autoWidth: false,
+                    language: {
+                        url: '{{ asset('js/id.json') }}'
                     }
+                };
+
+                const tableOptsWithButtons = {
+                    ...commonOpts,
+                    lengthChange: true,
+                    ordering: false,
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copy',
+                        {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: ':visible:not(:last-child)'
+                            }
+                        },
+                        {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: ':visible:not(:last-child)'
+                            }
+                        },
+                        {
+                            extend: 'pdf',
+                            exportOptions: {
+                                columns: ':visible:not(:last-child)',
+                            },
+                            customize: function(doc) {
+                                doc.content[1].table.widths =
+                                    Array(doc.content[1].table.body[0].length + 1).join('*').split('');
+                            }
+                        },
+                        {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible:not(:last-child)'
+                            }
+                        },
+                        'colvis'
+                    ]
+                };
+
+                $('#table-kepemilikan, #table-tanah, #table-irigasi, #table-transportasi').DataTable(
+                    tableOptsWithButtons);
+
+                $('a[data-toggle="pill"]').on('shown.bs.tab', function(event) {
+                    if (activePopup) {
+                        activePopup.remove();
+                    }
+
+                    const activeTabId = $(event.target).attr('id');
+
+                    if (activeTabId === 'tab-kepemilikan-link') {
+                        toggleParcelLayers(true);
+                    } else {
+                        toggleParcelLayers(false);
+                    }
+                    if (activeTabId === 'tab-irigasi-link') {
+                        toggleSaluranLayers(true);
+                    } else {
+                        toggleSaluranLayers(false);
+                    }
+
+                    map.resize();
+                });
+
+                $(document).on('click', '.btn-edit-saluran', function() {
+                    const data = $(this).data('saluran');
+                    const updateUrl = $(this).data('update-url');
+                    const form = $('#formEditSaluran');
+
+                    form.attr('action', updateUrl);
+                    form.find('[name="desa"]').val(data.desa);
+                    form.find('[name="hirarki"]').val(data.hirarki);
+                    form.find('[name="tipe_saluran"]').val(data.tipe_saluran);
+                    form.find('[name="kondisi"]').val(data.kondisi);
+                    form.find('[name="panjang_m"]').val(data.panjang_m);
+                    form.find('[name="lebar_m"]').val(data.lebar_m);
+                    form.find('[name="kedalaman_m"]').val(data.kedalaman_m);
+                    form.find('[name="masalah"]').val(data.masalah);
+                    form.find('[name="link_dokumentasi"]').val(data.link_dokumentasi);
+
+                    $('#modalEditSaluran').modal('show');
                 });
             });
-        });
+        </script>
+        <script>
+            $(function() {
+                const updateUrlTemplate = "{{ route('kepemilikan-lahan.update', ':id') }}";
 
-        $(document).on('click', '.btn-edit-analisis', function() {
-            const updateUrl = $(this).data('update-url');
-            const data = $(this).data('analisis');
+                $(document).on('click', '.btn-edit-kepemilikan', function() {
+                    const id = $(this).data('id');
+                    const nama = $(this).data('nama');
+                    const ket = $(this).data('keterangan');
 
-            const form = $('#formEditAnalisisTanah');
+                    $('#formEditKepemilikan').attr('action', updateUrlTemplate.replace(':id', id));
+                    $('#formEditKepemilikan [name="nama_pemilik"]').val(nama);
+                    $('#formEditKepemilikan [name="keterangan"]').val(ket);
 
-            form.attr('action', updateUrl);
+                    $('#modalEditKepemilikan').modal('show');
+                });
 
-            form.find('[name="tekstur"]').val(data.tekstur);
-            form.find('[name="ph"]').val(data.ph);
-            form.find('[name="c_organik"]').val(data.c_organik);
-            form.find('[name="n_total"]').val(data.n_total);
-            form.find('[name="p_potensial"]').val(data.p_potensial);
-            form.find('[name="k_potensial"]').val(data.k_potensial);
-            form.find('[name="ktk"]').val(data.ktk);
-            form.find('[name="kejenuhan_basa"]').val(data.kejenuhan_basa);
-            form.find('[name="kesesuaian_aktual"]').val(data.kesesuaian_aktual);
-            form.find('[name="faktor_pembatas"]').val(data.faktor_pembatas);
-            form.find('[name="kesesuaian_potensial"]').val(data.kesesuaian_potensial);
-        });
+                $('#modalEditKepemilikan').on('shown.bs.modal', function() {
+                    $(this).find('input[name="nama_pemilik"]').trigger('focus');
+                });
 
+                $(document).on('submit', '.form-delete', function(e) {
+                    e.preventDefault();
+                    const form = this;
 
-        @if (session('success'))
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: @json(session('success')),
-                    timer: 2000,
-                    showConfirmButton: false
+                    Swal.fire({
+                        title: 'Konfirmasi Penghapusan Data',
+                        text: "Apakah Anda yakin ingin menghapus data ini? Data yang telah dihapus tidak dapat dikembalikan.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: '<i class="fas fa-trash mr-1"></i> Hapus Data',
+                        cancelButtonText: '<i class="fas fa-ban mr-1"></i> Batalkan'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
                 });
             });
-        @endif
-    </script>
-@stop
+
+            $(document).on('click', '.btn-edit-analisis', function() {
+                const updateUrl = $(this).data('update-url');
+                const data = $(this).data('analisis');
+
+                const form = $('#formEditAnalisisTanah');
+
+                form.attr('action', updateUrl);
+
+                form.find('[name="tekstur"]').val(data.tekstur);
+                form.find('[name="ph"]').val(data.ph);
+                form.find('[name="c_organik"]').val(data.c_organik);
+                form.find('[name="n_total"]').val(data.n_total);
+                form.find('[name="p_potensial"]').val(data.p_potensial);
+                form.find('[name="k_potensial"]').val(data.k_potensial);
+                form.find('[name="ktk"]').val(data.ktk);
+                form.find('[name="kejenuhan_basa"]').val(data.kejenuhan_basa);
+                form.find('[name="kesesuaian_aktual"]').val(data.kesesuaian_aktual);
+                form.find('[name="faktor_pembatas"]').val(data.faktor_pembatas);
+                form.find('[name="kesesuaian_potensial"]').val(data.kesesuaian_potensial);
+            });
+
+
+            @if (session('success'))
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: @json(session('success')),
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                });
+            @endif
+        </script>
+    @stop
