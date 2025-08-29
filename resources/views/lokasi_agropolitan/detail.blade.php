@@ -178,6 +178,7 @@
                         {{-- Tab Pane untuk Kepemilikan Lahan --}}
                         <div class="tab-pane fade" id="tab-kepemilikan" role="tabpanel"
                             aria-labelledby="tab-kepemilikan-link">
+
                             {{-- Link Dokumentasi --}}
                             <a href="{{ route('lokasi.dokumentasi.kepemilikan', $lokasi->id) }}" target="_blank"
                                 class="btn btn-outline-success float-right">
@@ -236,9 +237,47 @@
                                 <i class="fas fa-images mr-1"></i> Lihat Dokumentasi
                             </a>
                             <h4>Data Jaringan Irigasi</h4>
-                            <div class="card card-outline card-info mt-4">
+                            <div class="card card-outline card-success mt-4">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-water mr-1"></i> Data Saluran Eksisting</h3>
+                                    <h3 class="card-title"><i class="fas fa-map-layer mr-1"></i> Tampilkan Rencana di Peta
+                                    </h3>
+                                </div>
+                                <div class="card-body row">
+                                    @php
+                                        $bendungData = json_decode($rencanaBendungGeoJson);
+                                        $sumurBorData = json_decode($rencanaSumurBorGeoJson);
+                                    @endphp
+
+                                    @if ($bendungData && !empty($bendungData->features))
+                                        <div class="col-md-6">
+                                            <div
+                                                class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                                <input type="checkbox" class="custom-control-input" id="toggle-bendung">
+                                                <label class="custom-control-label" for="toggle-bendung">Tampilkan Lokasi
+                                                    Rencana Bendung</label>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if ($sumurBorData && !empty($sumurBorData->features))
+                                        <div class="col-md-6">
+                                            <div
+                                                class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    id="toggle-sumur-bor">
+                                                <label class="custom-control-label" for="toggle-sumur-bor">Tampilkan
+                                                    Lokasi
+                                                    Rencana Sumur Bor</label>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                </div>
+                            </div>
+                            <div class="card card-outline card-success mt-4">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-water mr-1"></i> Data Saluran Air Eksisting
+                                    </h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -246,14 +285,19 @@
                                             style="width: 100%;">
                                             <thead>
                                                 <tr>
-                                                    <th>No.</th>
-                                                    <th>Desa</th>
-                                                    <th>Hirarki</th>
-                                                    <th>Tipe</th>
-                                                    <th>Dimensi (P×L×D)</th>
-                                                    <th>Kondisi</th>
-                                                    <th>Masalah</th>
-                                                    <th>Aksi</th>
+                                                    <th rowspan="2" class="align-middle">No.</th>
+                                                    <th rowspan="2" class="align-middle">Desa</th>
+                                                    <th rowspan="2" class="align-middle">Hirarki</th>
+                                                    <th rowspan="2" class="align-middle">Tipe Saluran</th>
+                                                    <th colspan="3" class="text-center">Dimensi (meter)</th>
+                                                    <th rowspan="2" class="align-middle">Kondisi</th>
+                                                    <th rowspan="2" class="align-middle">Masalah</th>
+                                                    <th rowspan="2" class="align-middle">Aksi</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>Panjang</th>
+                                                    <th>Lebar</th>
+                                                    <th>Kedalaman</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -263,11 +307,11 @@
                                                         <td>{{ $saluran->desa }}</td>
                                                         <td>{{ $saluran->hirarki }}</td>
                                                         <td>{{ $saluran->tipe_saluran }}</td>
-                                                        <td>{{ $saluran->panjang_m }}m × {{ $saluran->lebar_m }}m ×
-                                                            {{ $saluran->kedalaman_m }}m</td>
+                                                        <td>{{ $saluran->panjang_m }}</td>
+                                                        <td>{{ $saluran->lebar_m }}</td>
+                                                        <td>{{ $saluran->kedalaman_m }}</td>
                                                         <td>{{ $saluran->kondisi }}</td>
                                                         <td>{{ $saluran->masalah ?? '-' }}</td>
-
                                                         <td class="text-nowrap">
                                                             <button type="button" class="btn btn-sm btn-primary"
                                                                 onclick="zoomToSaluran({{ $saluran->id }})">
@@ -283,8 +327,67 @@
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="8" class="text-center">Tidak ada data saluran
+                                                        <td colspan="10" class="text-center">Tidak ada data saluran
                                                             irigasi.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr class="my-4">
+
+                                    {{-- DATA BANGUNAN EKSISTING --}}
+                                    <h5 class="mt-2">Tabel Bangunan Air Eksisting</h5>
+                                    <div class="table-responsive">
+                                        <table id="table-bangunan" class="table table-bordered table-striped"
+                                            style="width: 100%;">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2" class="align-middle">No.</th>
+                                                    <th rowspan="2" class="align-middle">Desa</th>
+                                                    <th rowspan="2" class="align-middle">Jenis Bangunan</th>
+                                                    <th rowspan="2" class="align-middle">Tipe Ukur Debit</th>
+                                                    <th colspan="2" class="text-center">Dimensi (meter)</th>
+                                                    <th rowspan="2" class="align-middle">Kondisi</th>
+                                                    <th rowspan="2" class="align-middle">Jumlah Pintu</th>
+                                                    <th rowspan="2" class="align-middle">Masalah</th>
+                                                    <th rowspan="2" class="align-middle">Aksi</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>Lebar</th>
+                                                    <th>Kedalaman</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse ($bangunanAirList as $i => $bangunan)
+                                                    <tr>
+                                                        <td>{{ $i + 1 }}</td>
+                                                        <td>{{ $bangunan->desa }}</td>
+                                                        <td>{{ $bangunan->jenis_bangunan ?? '-' }}</td>
+                                                        <td>{{ $bangunan->tipe_ukur_debit ?? '-' }}</td>
+                                                        <td>{{ $bangunan->lebar_m }}</td>
+                                                        <td>{{ $bangunan->kedalaman_m }}</td>
+                                                        <td>{{ $bangunan->kondisi }}</td>
+                                                        <td>{{ $bangunan->jumlah_pintu }}</td>
+                                                        <td>{{ $bangunan->masalah ?? '-' }}</td>
+                                                        <td class="text-nowrap">
+                                                            <button type="button" class="btn btn-sm btn-primary"
+                                                                onclick="zoomToBangunan({{ $bangunan->id }})">
+                                                                <i class="fas fa-fw fa-map-pin"></i> Zoom ke Lokasi
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-warning btn-edit-bangunan"
+                                                                data-bangunan='{{ json_encode($bangunan) }}'
+                                                                data-update-url="{{ route('bangunan-air.update', $bangunan->id) }}">
+                                                                <i class="fas fa-fw fa-edit"></i> Edit
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="10" class="text-center">Tidak ada data bangunan
+                                                            air.</td>
                                                     </tr>
                                                 @endforelse
                                             </tbody>
@@ -516,6 +619,77 @@
                             </form>
                         </div>
                     </div>
+
+                    {{-- Modal Edit Bangunan Air --}}
+                    <div class="modal fade" id="modalEditBangunan" tabindex="-1" role="dialog"
+                        aria-labelledby="modalEditBangunanTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <form id="formEditBangunan" method="POST" action="#">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalEditBangunanTitle"><i
+                                                class="fas fa-archway mr-2"></i>Edit Data Bangunan Air</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label>Desa</label>
+                                                <input type="text" name="desa" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Jenis Bangunan</label>
+                                                <input type="text" name="jenis_bangunan" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label>Tipe Ukur Debit</label>
+                                                <input type="text" name="tipe_ukur_debit" class="form-control">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Kondisi</label>
+                                                <input type="text" name="kondisi" class="form-control">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <h5>Dimensi & Pintu</h5>
+                                        <div class="row">
+                                            <div class="col-md-4 form-group">
+                                                <label>Lebar (m)</label>
+                                                <input type="number" step="0.01" name="lebar_m"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label>Kedalaman (m)</label>
+                                                <input type="number" step="0.01" name="kedalaman_m"
+                                                    class="form-control">
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <label>Jumlah Pintu</label>
+                                                <input type="number" name="jumlah_pintu" class="form-control">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="form-group">
+                                            <label>Masalah yang Ditemukan</label>
+                                            <textarea name="masalah" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-success"><i
+                                                class="fas fa-save mr-1"></i>Simpan Perubahan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -528,6 +702,9 @@
             const lokasiGeoJson = {!! json_encode($geoJsonData) !!};
             const parcelGeoJson = {!! json_encode($kepemilikanGeoJson) !!};
             const saluranGeoJson = {!! json_encode($saluranGeoJson) !!};
+            const bangunanAirGeoJson = {!! json_encode($bangunanAirGeoJson) !!};
+            const rencanaBendungGeoJson = {!! $rencanaBendungGeoJson !!};
+            const rencanaSumurBorGeoJson = {!! $rencanaSumurBorGeoJson !!};
 
             let activePopup = null;
 
@@ -609,6 +786,12 @@
                 }
                 const visibility = visible ? 'visible' : 'none';
                 map.setLayoutProperty('saluran-points', 'visibility', visibility);
+            }
+
+            function toggleBangunanLayers(visible) {
+                if (!map.getLayer('bangunan-points')) return;
+                const visibility = visible ? 'visible' : 'none';
+                map.setLayoutProperty('bangunan-points', 'visibility', visibility);
             }
 
             map.on('load', () => {
@@ -694,10 +877,9 @@
 
                         map.on('click', 'persil-fill', (e) => {
                             const p = e.features[0].properties;
-                            new maplibregl.Popup()
-                                .setLngLat(e.lngLat)
-                                .setHTML(`<strong>${p.nama_pemilik}</strong><br>ID: ${p.id}`)
-                                .addTo(map);
+                            const coordinates = e.lngLat;
+                            const popupHtml = `<strong>${p.nama_pemilik}</strong><br>ID: ${p.id}`;
+                            createOrUpdatePopup(coordinates, popupHtml);
                         });
                         map.on('mouseenter', 'persil-fill', () => map.getCanvas().style.cursor = 'pointer');
                         map.on('mouseleave', 'persil-fill', () => map.getCanvas().style.cursor = '');
@@ -731,12 +913,9 @@
                     map.on('click', 'saluran-points', (e) => {
                         const properties = e.features[0].properties;
                         const coordinates = e.features[0].geometry.coordinates.slice();
-
-                        new maplibregl.Popup()
-                            .setLngLat(coordinates)
-                            .setHTML(
-                                `<strong>Desa: ${properties.desa}</strong><br>Kondisi: ${properties.kondisi}`)
-                            .addTo(map);
+                        const popupHtml =
+                            `<strong>Desa: ${properties.desa}</strong><br>Kondisi: ${properties.kondisi}`;
+                        createOrUpdatePopup(coordinates, popupHtml);
                     });
 
                     map.on('mouseenter', 'saluran-points', () => {
@@ -747,6 +926,75 @@
                     });
 
                     toggleSaluranLayers(false);
+                }
+
+                if (bangunanAirGeoJson && bangunanAirGeoJson.features.length > 0) {
+                    map.addSource('bangunan-air', {
+                        'type': 'geojson',
+                        'data': bangunanAirGeoJson
+                    });
+                    map.addLayer({
+                        id: 'bangunan-points',
+                        type: 'circle',
+                        source: 'bangunan-air',
+                        paint: {
+                            'circle-radius': 7,
+                            'circle-color': '#FF5733',
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#FFFFFF'
+                        }
+                    });
+                    toggleBangunanLayers(false);
+                    map.on('click', 'bangunan-points', (e) => {
+                        const p = e.features[0].properties;
+                        createOrUpdatePopup(e.features[0].geometry.coordinates.slice(),
+                            `<strong>${p.jenis_bangunan}</strong><br>Desa: ${p.desa}<br>Kondisi: ${p.kondisi}`
+                        );
+                    });
+                    map.on('mouseenter', 'bangunan-points', () => map.getCanvas().style.cursor = 'pointer');
+                    map.on('mouseleave', 'bangunan-points', () => map.getCanvas().style.cursor = '');
+                }
+
+                if (rencanaBendungGeoJson && rencanaBendungGeoJson.features.length > 0) {
+                    map.addSource('rencana-bendung', {
+                        type: 'geojson',
+                        data: rencanaBendungGeoJson
+                    });
+                    map.addLayer({
+                        id: 'rencana-bendung-points',
+                        type: 'circle',
+                        source: 'rencana-bendung',
+                        paint: {
+                            'circle-radius': 8,
+                            'circle-color': '#C81CDE',
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        },
+                        layout: {
+                            'visibility': 'none'
+                        }
+                    });
+                }
+
+                if (rencanaSumurBorGeoJson && rencanaSumurBorGeoJson.features.length > 0) {
+                    map.addSource('rencana-sumur-bor', {
+                        type: 'geojson',
+                        data: rencanaSumurBorGeoJson
+                    });
+                    map.addLayer({
+                        id: 'rencana-sumur-bor-points',
+                        type: 'circle',
+                        source: 'rencana-sumur-bor',
+                        paint: {
+                            'circle-radius': 8,
+                            'circle-color': '#FFDF20',
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        },
+                        layout: {
+                            'visibility': 'none'
+                        }
+                    });
                 }
             });
 
@@ -780,6 +1028,31 @@
                 const popupHtml =
                     `<strong>Desa: ${feature.properties.desa}</strong><br>Kondisi: ${feature.properties.kondisi}`;
                 createOrUpdatePopup(feature.geometry.coordinates, popupHtml);
+
+                document.getElementById('map').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            };
+
+            window.zoomToBangunan = function(id) {
+                if (!bangunanAirGeoJson || !bangunanAirGeoJson.features) return;
+                const feature = bangunanAirGeoJson.features.find(f => Number(f.properties.id) === Number(id));
+                if (!feature) return;
+
+                toggleSaluranLayers(true);
+                toggleBangunanLayers(true);
+                $('#tab-irigasi-link').tab('show');
+
+                map.flyTo({
+                    center: feature.geometry.coordinates,
+                    zoom: 17,
+                    essential: true
+                });
+
+                const p = feature.properties;
+                createOrUpdatePopup(feature.geometry.coordinates,
+                    `<strong>${p.jenis_bangunan}</strong><br>Desa: ${p.desa}<br>Kondisi: ${p.kondisi}`);
 
                 document.getElementById('map').scrollIntoView({
                     behavior: 'smooth',
@@ -853,11 +1126,26 @@
                     }
                     if (activeTabId === 'tab-irigasi-link') {
                         toggleSaluranLayers(true);
+                        toggleBangunanLayers(true);
                     } else {
                         toggleSaluranLayers(false);
+                        toggleBangunanLayers(false);
                     }
 
                     map.resize();
+                });
+
+                $('#toggle-bendung').on('change', function() {
+                    if (!map.getLayer('rencana-bendung-points'))
+                        return;
+                    const visibility = $(this).is(':checked') ? 'visible' : 'none';
+                    map.setLayoutProperty('rencana-bendung-points', 'visibility', visibility);
+                });
+
+                $('#toggle-sumur-bor').on('change', function() {
+                    if (!map.getLayer('rencana-sumur-bor-points')) return;
+                    const visibility = $(this).is(':checked') ? 'visible' : 'none';
+                    map.setLayoutProperty('rencana-sumur-bor-points', 'visibility', visibility);
                 });
 
                 $(document).on('click', '.btn-edit-saluran', function() {
@@ -940,6 +1228,25 @@
                 form.find('[name="kesesuaian_aktual"]').val(data.kesesuaian_aktual);
                 form.find('[name="faktor_pembatas"]').val(data.faktor_pembatas);
                 form.find('[name="kesesuaian_potensial"]').val(data.kesesuaian_potensial);
+            });
+
+            $(document).on('click', '.btn-edit-bangunan', function() {
+                const data = $(this).data('bangunan');
+                const updateUrl = $(this).data('update-url');
+                const form = $('#formEditBangunan');
+
+                form.attr('action', updateUrl);
+
+                form.find('[name="desa"]').val(data.desa);
+                form.find('[name="jenis_bangunan"]').val(data.jenis_bangunan);
+                form.find('[name="tipe_ukur_debit"]').val(data.tipe_ukur_debit);
+                form.find('[name="kondisi"]').val(data.kondisi);
+                form.find('[name="lebar_m"]').val(data.lebar_m);
+                form.find('[name="kedalaman_m"]').val(data.kedalaman_m);
+                form.find('[name="jumlah_pintu"]').val(data.jumlah_pintu);
+                form.find('[name="masalah"]').val(data.masalah);
+
+                $('#modalEditBangunan').modal('show');
             });
 
 

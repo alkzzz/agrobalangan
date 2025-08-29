@@ -45,6 +45,11 @@ class LokasiAgropolitan extends Model
         return $this->hasMany(SaluranIrigasi::class, 'lokasi_agropolitan_id');
     }
 
+    public function bangunanAir()
+    {
+        return $this->hasMany(BangunanAir::class, 'lokasi_agropolitan_id');
+    }
+
     public function media()
     {
         return $this->morphMany(\App\Models\Media::class, 'model');

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\LokasiAgropolitan;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+use App\Models\SaluranIrigasi;
+use App\Models\BangunanAir;
 
 class LokasiAgropolitanController extends Controller
 {
@@ -47,7 +50,7 @@ class LokasiAgropolitanController extends Controller
 
     public function detail($id)
     {
-        $lokasi = LokasiAgropolitan::with(['kecamatan', 'kepemilikanLahan', 'analisisTanah', 'saluranIrigasi'])->findOrFail($id);
+        $lokasi = LokasiAgropolitan::with(['kecamatan', 'kepemilikanLahan', 'analisisTanah', 'saluranIrigasi', 'bangunanAir'])->findOrFail($id);
 
         $feature = [
             'type' => 'Feature',
@@ -104,6 +107,64 @@ class LokasiAgropolitanController extends Controller
             'features' => $saluranFeatures,
         ];
 
+        $bangunanAirFeatures = $lokasi->bangunanAir->map(function ($bangunan) {
+            return [
+                'type' => 'Feature',
+                'geometry' => $bangunan->geometri->toArray(),
+                'properties' => [
+                    'id' => $bangunan->id,
+                    'desa' => $bangunan->desa,
+                    'jenis_bangunan' => $bangunan->jenis_bangunan,
+                    'kondisi' => $bangunan->kondisi,
+                ],
+            ];
+        })->values()->all();
+
+        $bangunanAirGeoJson = [
+            'type' => 'FeatureCollection',
+            'features' => $bangunanAirFeatures,
+        ];
+
+        $namaKecamatan = $lokasi->kecamatan->name;
+
+        // Rencana Bendung
+        $pathBendung = public_path('geojson/Rencana_bendung_perkecamatan.geojson');
+        $rencanaBendungGeoJson = json_encode(['type' => 'FeatureCollection', 'features' => []]); // Default: GeoJSON kosong
+
+        if (File::exists($pathBendung)) {
+            $geojsonBendungAsli = json_decode(File::get($pathBendung));
+            $fiturBendungFiltered = [];
+
+            if (isset($geojsonBendungAsli->features)) {
+                foreach ($geojsonBendungAsli->features as $feature) {
+                    if (isset($feature->properties->KECAMATAN) && strcasecmp($feature->properties->KECAMATAN, $namaKecamatan) == 0) {
+                        $fiturBendungFiltered[] = $feature;
+                    }
+                }
+            }
+
+            $rencanaBendungGeoJson = json_encode(['type' => 'FeatureCollection', 'features' => $fiturBendungFiltered]);
+        }
+
+        // Rencana Sumur Bor
+        $pathSumurBor = public_path('geojson/Rencana_sumur_bor_perkecamatan.geojson');
+        $rencanaSumurBorGeoJson = json_encode(['type' => 'FeatureCollection', 'features' => []]); // Default: GeoJSON kosong
+
+        if (File::exists($pathSumurBor)) {
+            $geojsonSumurBorAsli = json_decode(File::get($pathSumurBor));
+            $fiturSumurBorFiltered = [];
+
+            if (isset($geojsonSumurBorAsli->features)) {
+                foreach ($geojsonSumurBorAsli->features as $feature) {
+                    if (isset($feature->properties->KECAMATAN) && strcasecmp($feature->properties->KECAMATAN, $namaKecamatan) == 0) {
+                        $fiturSumurBorFiltered[] = $feature;
+                    }
+                }
+            }
+
+            $rencanaSumurBorGeoJson = json_encode(['type' => 'FeatureCollection', 'features' => $fiturSumurBorFiltered]);
+        }
+
         return view('lokasi_agropolitan.detail', [
             'lokasi'             => $lokasi,
             'geoJsonData'        => $geoJsonData,
@@ -112,6 +173,10 @@ class LokasiAgropolitanController extends Controller
             'analisisTanah'      => $lokasi->analisisTanah,
             'saluranList'        => $lokasi->saluranIrigasi,
             'saluranGeoJson'     => $saluranGeoJson,
+            'bangunanAirList'    => $lokasi->bangunanAir,
+            'bangunanAirGeoJson' => $bangunanAirGeoJson,
+            'rencanaBendungGeoJson'  => $rencanaBendungGeoJson,
+            'rencanaSumurBorGeoJson' => $rencanaSumurBorGeoJson,
         ]);
     }
 
@@ -202,5 +267,46 @@ class LokasiAgropolitanController extends Controller
         }
 
         return redirect()->back()->with('success', 'Dokumentasi berhasil diunggah.');
+    }
+
+    public function updateSaluran(Request $request, SaluranIrigasi $saluran_irigasi)
+    {
+        $validated = $request->validate([
+            'desa' => 'required|string|max:255',
+            'hirarki' => 'nullable|string|max:255',
+            'tipe_saluran' => 'nullable|string|max:255',
+            'kondisi' => 'nullable|string|max:255',
+            'panjang_m' => 'nullable|numeric',
+            'lebar_m' => 'nullable|numeric',
+            'kedalaman_m' => 'nullable|numeric',
+            'masalah' => 'nullable|string',
+            'link_dokumentasi' => 'nullable|url',
+        ]);
+
+        $saluran_irigasi->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Data Saluran Irigasi berhasil diperbarui.');
+    }
+
+    public function updateBangunan(Request $request, BangunanAir $bangunan_air)
+    {
+        $validated = $request->validate([
+            'desa' => 'required|string|max:255',
+            'jenis_bangunan' => 'nullable|string|max:255',
+            'tipe_ukur_debit' => 'nullable|string|max:255',
+            'kondisi' => 'nullable|string|max:255',
+            'lebar_m' => 'nullable|numeric',
+            'kedalaman_m' => 'nullable|numeric',
+            'jumlah_pintu' => 'nullable|integer',
+            'masalah' => 'nullable|string',
+        ]);
+
+        $bangunan_air->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Data Bangunan Air berhasil diperbarui.');
     }
 }

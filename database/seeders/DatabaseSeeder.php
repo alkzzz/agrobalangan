@@ -40,5 +40,6 @@ class DatabaseSeeder extends Seeder
         $this->call(KepemilikanLahanAwayanSeeder::class);
         $this->call(AnalisisTanahSeeder::class);
         $this->call(SaluranIrigasiSeeder::class);
+        $this->call(BangunanAirSeeder::class);
     }
 }
